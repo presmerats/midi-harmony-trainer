@@ -1,0 +1,150 @@
+/* The key is to maintain full lynx compatibility as lynx is the one
+   true browser.  All hail lynx!  This is only here to make this page
+   look better (more like lynx) on lesser browsers.  All hail lynx!  */
+
+body {
+    /* This isn't what's used these days, but it's a start. */
+    /* Best part is that this has no effect on lynx.  */
+    /* All hail lynx! */
+    margin: 20px 50px;
+
+    /* Ah, this seems to be part of it.  But how to center? */
+    /* width: 1024px; */
+    
+    /* http://bluerobot.com/web/css/center1.html */
+    /* It appears that we need a div tag to pull this off.   How gauche. 
+       The div has width specified while the body just has 
+       text-align: center.  This is just too much.  What will lynx do
+       when it encounters this?  I hate to ask.  */
+    /* All hail lynx! */
+}
+
+/* My first attempt at a button link.  This is pretty bad. */
+a.large {
+    font-size: 25px;
+    text-decoration: none;
+    color: black;
+    padding: 5px 15px 5px 15px;
+}
+
+a.large:link {
+    background-color: LightGray;
+}
+
+a.large:visited {
+    background-color: LightGray;
+}
+
+a.large:hover {
+    background-color: GhostWhite;
+}
+
+a.large:active {
+    background-color: GhostWhite;
+}
+
+.topbanner {
+	white-space: nowrap;
+}
+
+.navbar {
+	white-space: nowrap;
+}
+
+.header-1 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    font-size: 50px;
+    margin: 5px 0px 5px 0px;
+}
+
+.header-2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    font-size: 40px;
+    margin: 5px 0px 5px 0px;
+}
+
+.body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+}
+
+.content-box {
+    background-color: #eee;
+    margin: 10px 0px 10px 0px;
+    padding: 10px 30px 10px 30px;
+}
+
+a.button {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #777;
+    border: 1px solid black;
+    border-radius: 10px;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+a.button:hover {
+    background-color: #555;
+}
+
+/* Click */
+a.button:active {
+    background-color: #aaa;
+}
+
+.menu-item {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    font-size: 15px;
+    text-decoration: none;
+    color: black;
+    /* This lets you expand the space between lines when using <br />. */
+    line-height: 1.4;
+}
+
+/*
+.menu-item:link {
+    color: black;
+}
+
+.menu-item:visited {
+    color: black;
+}
+*/
+
+.menu-item:hover {
+    color: blue;
+}
+
+.menu-item:active {
+    color: blue;
+}
+
+/* Finally...  The byline immediately under the title. */
+
+.article-title {
+    /* We want the byline immediately under the title. */
+    margin-bottom: 0;
+
+}
+
+.article-byline {
+    /* We want the byline immediately under the title. */
+    margin-top: 0;
+    font-size: 90%;
+}
+
+.article-date {
+    margin-left: 10px;
+    color: #aaa;
+}
+
+

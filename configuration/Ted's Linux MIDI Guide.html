@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<!-- saved from url=(0041)http://tedfelix.com/linux/linux-midi.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  <title>Ted's Linux MIDI Guide</title>
+  <link href="./Ted&#39;s Linux MIDI Guide_files/main.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+
+<h1 class="article-title">Ted's Linux MIDI Guide</h1>
+<p class="article-byline">
+  <span class="article-by">By <a href="http://tedfelix.com/index.html">Ted Felix</a></span>
+  <span class="article-date">July 2018</span>
+</p>
+
+<!-- HTML Lovingly Handcrafted by Ted. -->
+
+<!-- ******************************************************************** -->
+
+<h2>Introduction</h2>
+
+<p>Linux is a great OS for MIDI.  The problem is that you've got to understand a lot about Linux to get started.  This guide is intended to help ease the transition.  This document has been tested with Ubuntu 18.04.</p>
+
+<p>This is a very command-line-intensive tutorial.  The reason for this is that it reduces the amount of software that is running which has two advantages: performance and reliability.  The GUI can introduce new bugs, so it's more reliable to work with the command line tools.  We will get to the GUI stuff near the end.</p>
+
+<p>If you would prefer a faster, more GUI approach, start with the "<a href="http://tedfelix.com/linux/linux-midi.html#preliminaries">Preliminaries</a>" sections, then jump to the <a href="http://tedfelix.com/linux/linux-midi.html#qjackctl">qjackctl</a> and <a href="http://tedfelix.com/linux/linux-midi.html#qsynth">Qsynth</a> sections, then go back to the <a href="http://tedfelix.com/linux/linux-midi.html#virtual-midi-keyboard">Virtual MIDI Keyboard</a> section and read to the end.  This should get you going quickly.  It's still a good idea to read the whole thing as there are many helpful troubleshooting tips sprinkled throughout.</p>
+
+<!-- ******************************************************************** -->
+
+<h2><a id="preliminaries">Preliminaries</a></h2>
+
+<p>Before we get started, we need to take care of two things:</p>
+
+<ol>
+  <li><a href="http://tedfelix.com/linux/linux-midi.html#installing-a-low-latency-kernel">Installing a low latency kernel.</a></li>
+  <li><a href="http://tedfelix.com/linux/linux-midi.html#audio-group">Setting up an "audio" group</a>.</li>
+</ol>
+
+<p>The next three sections cover these topics.</p>
+
+<!-- ******************************************************************** -->
+
+<h2><a id="installing-a-low-latency-kernel">Installing a Low Latency Kernel</a></h2>
+
+<p>Audio applications are time-critical, so they need a preemptible (low latency) kernel with a 1000Hz timer frequency.</p>
+
+<p>To check whether you are running a low latency kernel, use uname:</p>
+
+<code><blockquote><pre>$ uname -a
+Linux ted-laptop 3.19.0-18-lowlatency #18-Ubuntu SMP PREEMPT Tue May 19 19:02:50 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux
+</pre></blockquote></code>
+
+<p>The important thing to notice is not "lowlatency", but "PREEMPT".  That means that I've got a preemptible kernel loaded.  This means low latency.</p>
+
+<p>Next we want to make sure the timer is configured for 1000HZ.  To do this, we use grep on the kernel config:</p>
+
+<code><blockquote><pre>$ grep ^CONFIG_HZ /boot/config-`uname -r`
+CONFIG_HZ_1000=y
+CONFIG_HZ=1000
+</pre></blockquote></code>
+
+<p>"CONFIG_HZ_1000=y" tells us that 1000Hz is enabled, and "CONFIG_HZ=1000" tells us the clock frequency is 1000Hz.  So, we are ready.</p>
+
+<p>If you don't see PREEMPT or 1000Hz as above, you'll need to install a low latency kernel.  In Debian-based distros:</p>
+
+<code><blockquote><pre>$ sudo apt-get install linux-lowlatency
+</pre></blockquote></code>
+
+<p>...and reboot.  Other distros should provide something similar.</p>
+
+<p>See the <a href="http://tedfelix.com/linux/linux-midi.html#low-latency-kernel">Low Latency Kernel</a> section for more options.</p>
+
+<!-- ******************************************************************** -->
+
+<h2><a id="audio-group">"audio" Group</a></h2>
+
+<p>Audio software needs to run at a higher priority and with memory locked so that it doesn't swap out to the hard disk.  To give a user that power, we create an "audio" group, give that group some special privileges, then add the user to that group.</p>
+
+<p><i>Note: Ubuntu/Debian can set up a properly configured audio group for you when you install jackd2.  If you'd like, you can do this before continuing:</i></p>
+
+<code><blockquote><pre>$ sudo apt-get install jackd2
+</pre></blockquote></code>
+
+<p><i>Be sure to say "yes" when it asks if you want to enable realtime process priority:</i></p>
+
+<p><img src="./Ted&#39;s Linux MIDI Guide_files/jackd2-install-ubuntu14.10.png"></p>
+
+<p><i>After jackd2 is installed, you can skip to "Add Users To "audio" Group" below.</i></p>
+
+<h3>Create An "audio" Group</h3>
+
+<p>First, let's check to see if your system already has an audio group:</p>
+
+<code><blockquote><pre>$ grep audio /etc/group
+audio:x:29:pulse
+</pre></blockquote></code>
+
+<p>If you see an "audio" line like the one above, then you've already got an audio group and you can skip to Group Limits.</p>
+
+<p>If grep didn't find an audio group, add one with groupadd:</p>
+
+<code><blockquote><pre>$ sudo groupadd audio
+</pre></blockquote></code>
+
+<h3>Group Limits</h3>
+<p>The limits for the audio group can usually be found in /etc/security/limits.d/audio.conf.  Check to see if that file exists on your system.  If not, create one.  You might need to create the limits.d directory.  Use mkdir for that:</p>
+
+<code><blockquote><pre>$ sudo mkdir /etc/security/limits.d
+</pre></blockquote></code>
+
+<p>Then create the audio.conf file in there.  I usually use nano:</p>
+
+<code><blockquote><pre>$ sudo nano /etc/security/limits.d/audio.conf
+</pre></blockquote></code>
+
+<p>And add the following lines:</p>
+
+<code><blockquote><pre>@audio   -  rtprio     95
+@audio   -  memlock    unlimited
+#@audio   -  nice       -19
+</pre></blockquote></code>
+
+<p>The rtprio line gives the audio group the ability to elevate real-time priority to 95 (99 is the highest).  JACK needs to be able to do this to handle audio in real-time.  The memlock line gives the ability to lock any amount of memory.  fluidsynth needs to be able to do this to keep the soundfont in memory while it is using it.  fluidsynth will issue error messages about not being able to "pin" memory if this isn't working.</p>
+
+<p>The commented out "nice" line would give the ability to raise nice priority to -19 (-20 is the highest).  Since it is commented out (#), it does nothing.  I've just provided it for reference.</p>
+
+<p>For more info, see the <a href="http://linux.die.net/man/5/limits.conf">man page for limits.conf(5)</a>.</p>
+
+<h3>Add Users To "audio" Group</h3>
+<p>Even if all of the above was already done for you by your distro, the chances are good that you'll still need to add yourself to the "audio" group.  You can check to see if you are already in the "audio" group with the groups command:</p>
+
+<code><blockquote><pre>$ groups
+ted adm cdrom sudo dip plugdev lpadmin sambashare
+</pre></blockquote></code>
+
+<p>In this case, we can see that I am not in the audio group yet, so I need to add myself with gpasswd:</p>
+
+<code><blockquote><pre>$ sudo gpasswd -a ted audio
+</pre></blockquote></code>
+
+<p>You'll want to use your userid instead of "ted" when you do this.</p>
+
+<p>This change will not take effect immediately.  You must logout then log back in again.  <i>(In Ubuntu 17.04, a reboot was required.)</i>  Use the "groups" command to see if you were successfully added to the audio group.</p>
+
+<code><blockquote><pre>$ groups
+ted adm cdrom sudo <b>audio</b> dip plugdev lpadmin sambashare
+</pre></blockquote></code>
+
+<!-- ******************************************************************** -->
+
+<h2>The Fork in the Road</h2>
+
+<p>The preliminaries are over.  Your system should now be ready to do everything described in this document.  You can feel free to jump around if you'd like.  E.g. skip to the <a href="http://tedfelix.com/linux/linux-midi.html#qjackctl">qjackctl</a> section if you'd like to see the GUI approach.  If you are having trouble, come back here and go through this tutorial sequentially to find where the problem is.</p>
+
+<p>If you want a thorough understanding of Linux's support for MIDI, read on...</p>
+
+<!-- ******************************************************************** -->
+
+<h2>ALSA</h2>
+
+<p><a href="http://www.alsa-project.org/">ALSA</a>, the Advanced Linux Sound Architecture, is the part of the Linux kernel that talks to your sound-related hardware, like sound cards and MIDI interfaces.  It is made up of device drivers and other kernel modules that provide useful audio-related functions.  Many distros already have all the ALSA-related parts of the kernel built-in, so all you have to do is plug in your hardware and use it.</p>
+
+<p><img src="./Ted&#39;s Linux MIDI Guide_files/linux-midi.png"></p>
+
+<h3><a id="alsa-device-names">ALSA Device Names</a></h3>
+<p>To uniquely identify each piece of audio hardware on a system, ALSA assigns them unique names.  Usually, "hw:0" is the name of your soundcard.  The various audio programs assume that they will be working with hw:0, but they all provide ways to change this.</p>
+
+<p>You can run into trouble if your soundcard isn't where you think it should be.  So, we need to figure out what audio device names have been assigned to which devices.  There are two ways to do this.  First we can check /proc/asound/cards:</p>
+
+<code><blockquote><pre>$ cat /proc/asound/cards
+ 0 [Interface      ]: USB-Audio - USB Uno MIDI Interface
+                      M-Audio USB Uno MIDI Interface at usb-0000:00:1d.0-1.2, full speed
+ 1 [LPK25          ]: USB-Audio - LPK25
+                      AKAI professional LLC LPK25 at usb-0000:00:1d.0-1.1, full speed
+ 2 [Intel          ]: HDA-Intel - HDA Intel
+                      HDA Intel at 0xd4400000 irq 45
+</pre></blockquote></code>
+
+<p>The numbers to the left indicate the card number.  So in this case, number 2 is my soundcard.  This means hw:2 is the ALSA device name I need to use.  But this doesn't tell the whole story.  There may be multiple devices per card.  aplay gets us that information:</p>
+
+<code><blockquote><pre>$ aplay -l
+**** List of PLAYBACK Hardware Devices ****
+card 2: Intel [HDA Intel], device 0: ALC270 Analog [ALC270 Analog]
+  Subdevices: 0/1
+  Subdevice #0: subdevice #0
+card 2: Intel [HDA Intel], device 3: HDMI 0 [HDMI 0]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+</pre></blockquote></code>
+
+<p>From this, we can see that I have two sound devices on my system.  The first is card 2, device 0, or "hw:2,0".  That is a standard sound device that is connected to my speakers and headphone jack.  The second is card 2, device 3, or "hw:2,3".  That is the sound device that drives my HDMI port.</p>
+
+<p><i>Note that there is also a subdevice level.  It appears that the general form is hw:card,device,subdevice.  If you leave subdevice or device off, it assumes 0.</i></p>
+
+<p>System-wide ALSA device names and aliases (e.g. "default" and "pulse") can be found in the alsa.conf file (usually found in /usr/share/alsa) and in the files in the alsa.conf.d directory.  See <a href="http://www.alsa-project.org/main/index.php/Asoundrc">asoundrc</a> on the ALSA wiki.  It describes how to create your own device names and aliases which can be very helpful with multiple soundcards.</p>
+
+<p>Hopefully "hw:0" is all you need to know after looking at your device lists.  If not, then be sure to jot down the appropriate device name that you discovered, and use it where you see "hw:0" for the rest of this tutorial.</p>
+
+<h3>Testing ALSA Audio</h3>
+
+<p>Use aplay to test ALSA audio.  aplay is a simple audio player that can play WAV files.  You can use sox to generate a WAV file and then play it with aplay:</p>
+
+<code><blockquote><pre>$ sox -b 16 -n test.wav rate 44100 channels 2 synth 1 sine 440 gain -1
+$ aplay -D hw:0 test.wav
+</pre></blockquote></code>
+
+<h3>ALSA Troubleshooting</h3>
+
+<p><b>"Device or resource busy"</b> - If you get a "Device or resource busy" message, that means someone else (like pulseaudio) is using the soundcard.  In that case "-D pulse" might work.  See <a href="http://tedfelix.com/linux/linux-midi.html#killing-pulseaudio">Killing pulseaudio</a>.</p>
+
+<p><b>"Channels count non available"</b> - The one tricky thing about aplay is that the WAV file format must match the exact format that the device expects.  If you get a "Channels count non available" message from aplay, then the format doesn't match.</p>
+
+<!-- ******************************************************************** -->
+
+<h2>pulseaudio</h2>
+
+<p><a href="http://www.pulseaudio.org/">pulseaudio</a> sits on top of ALSA and, in theory, adds some sort of value.  I'm guessing that a long time ago, ALSA didn't offer support for multiple applications accessing a soundcard at the same time (multiplexing).  pulseaudio does this.  However, ALSA has since added multiplexing, and pulseaudio seems rather useless to me.  So, for our purposes, pulseaudio is simply something that gets in our way.</p>
+
+<p>The various troubleshooting sections will point out when pulseaudio may be getting in the way.  They will then suggest checking out the <a href="http://tedfelix.com/linux/linux-midi.html#killing-pulseaudio">Killing pulseaudio</a> section for various ways to get rid of it.</p>
+
+<!-- ******************************************************************** -->
+
+<h2>fluidsynth</h2>
+
+<p><a href="http://www.fluidsynth.org/">fluidsynth</a> is a software synthesizer or "softsynth".  It can convert MIDI data into sound by using a "soundfont".  On an apt-based distro (Debian, Ubuntu, Mint...), you can do the following to get fluidsynth and a soundfont (fluid-soundfont-gm) installed:</p>
+
+<code><blockquote><pre>$ sudo apt-get install fluidsynth
+$ sudo apt-get install fluid-soundfont-gm
+</pre></blockquote></code>
+
+<p>Other distros should have similar packages available.  To play a MIDI file called "song.mid":</p>
+
+<code><blockquote><pre>$ fluidsynth --audio-driver=alsa -o audio.alsa.device=hw:0 /usr/share/sounds/sf2/FluidR3_GM.sf2 song.mid
+</pre></blockquote></code>
+
+<p>For testing, there are many sites with free midi files to download.  <a href="http://www.piano-midi.de/">http://www.piano-midi.de/</a> has some.  Or search on "midi files".</p>
+
+<p>To stop fluidsynth, type "quit" at its "&gt;" prompt.  We'll need to stop fluidsynth for the next section.</p>
+
+<h3>fluidsynth Troubleshooting</h3>
+
+<p><b>"audio device is used by another application"</b> - Someone else (like pulseaudio) is using the soundcard.  See <a href="http://tedfelix.com/linux/linux-midi.html#killing-pulseaudio">Killing pulseaudio</a>.</p>
+
+<!-- ******************************************************************** -->
+
+<h2><a id="aplaymidi">aplaymidi</a></h2>
+<p>Instead of having fluidsynth play a MIDI file, we can also have fluidsynth make music from MIDI data that comes from other programs.  To test this, we'll use the program aplaymidi which is part of the "alsa-utils" package.  In apt-based distros:</p>
+
+<code><blockquote><pre>$ sudo apt-get install alsa-utils
+</pre></blockquote></code>
+
+<p>Now we'll run fluidsynth as a server.  This means that it will run and wait for other programs to connect to it and send it MIDI data.</p>
+
+<code><blockquote><pre>$ fluidsynth --server --audio-driver=alsa -o audio.alsa.device=hw:0 /usr/share/sounds/sf2/FluidR3_GM.sf2
+</pre></blockquote></code>
+
+<p>You'll want to leave that running and bring up another terminal window.  There you can use aplaymidi to find out what port number fluidsynth is waiting on:</p>
+
+<code><blockquote><pre>$ aplaymidi -l
+</pre></blockquote></code>
+
+<p>Here's what mine shows:</p>
+
+<code><blockquote><pre> Port    Client name                      Port name
+ 14:0    Midi Through                     Midi Through Port-0
+128:0    FLUID Synth (2825)               Synth input port (2825:0)
+</pre></blockquote></code>
+
+<p>Note that fluidsynth is on port 128:0.  We'll need to use that to let aplaymidi know where to send MIDI data:</p>
+
+<code><blockquote><pre>$ aplaymidi -p 128:0 song.mid
+</pre></blockquote></code>
+
+<p>To stop fluidsynth, type "quit" at its "&gt;" prompt.  We'll need to stop fluidsynth for the next section.</p>
+
+<!-- ******************************************************************** -->
+
+<h2>JACK</h2>
+<p>Up to this point, we've seen how to do audio work with the ALSA drivers directly.  However, for serious work, <a href="http://jackaudio.org/">JACK</a> is a better choice since it offers low-latency and the ability to synchronize multiple audio sources.  You can think of JACK as an improved pulseaudio.  JACK is (as the marketing types might say) "designed to meet the demanding needs of audio professionals."</p>
+
+<p>Before we get started with JACK, be sure to close any audio applications you've been using.</p>
+
+<p>There are two versions of JACK: JACK1 and JACK2.  These are <a href="https://github.com/jackaudio/jackaudio.github.com/wiki/Q_difference_jack1_jack2">interchangeable</a>.  I've had better luck in the past with JACK2, so I tend to use it.  If you didn't already install JACK2 back in the "Audio Group" section, install it now.</p>
+
+<code><blockquote><pre>$ sudo apt-get install jackd2
+</pre></blockquote></code>
+
+<p>To run the JACK Daemon (jackd):</p>
+
+<code><blockquote><pre>$ jackd -d alsa --device hw:0 --rate 44100 --period 128
+</pre></blockquote></code>
+
+<p>The defaults for JACK are --rate 48000 and --period 1024.  FluidSynth uses a sample rate of 44100, so going with 44100 reduces the amount of work that needs to be done.  Setting the period to 128 frames (3msec) reduces latency to something much more suitable for music-making.  The default value of 1024 is 23.2 milliseconds, which is a very noticeable delay.</p>
+
+<h3>JACK Troubleshooting</h3>
+
+<p><b>ALSA Device Names</b> - If you give JACK the wrong ALSA device name, you will get an "ALSA: Cannot open PCM device alsa_pcm for playback. Falling back to capture-only mode" error from JACK.  See <a href="http://tedfelix.com/linux/linux-midi.html#alsa-device-names">ALSA Device Names</a> above.</p>
+
+<p><b>The playback device "hw:0" is already in use.</b> - If you get an error message like:</p>
+
+<code><blockquote><pre>ATTENTION: The playback device "hw:0" is already in use. The following
+applications are using your soundcard(s) so you should check them and stop
+them as necessary before trying to start JACK again:
+
+pulseaudio (process ID 1653)
+</pre></blockquote></code>
+
+<p>...then pulseaudio isn't getting out of JACK's way.  See <a href="http://tedfelix.com/linux/linux-midi.html#killing-pulseaudio">Killing pulseaudio</a>.</p>
+
+<p><b>"Failed to acquire device name"</b> - If you get an error message like:</p>
+
+<code><blockquote><pre>Failed to acquire device name : Audio0 
+error : Method "RequestRelease" with signature "i" on interface "org.freedesktop.ReserveDevice1" doesn't exist
+
+Audio device hw:0 cannot be acquired...
+Cannot initialize driver
+</pre></blockquote></code>
+
+<p>...then JACK and pulseaudio are having a bit of a disagreement over who should get the soundcard.  See <a href="http://tedfelix.com/linux/linux-midi.html#killing-pulseaudio">Killing pulseaudio</a>.</p>
+
+<h3>Testing JACK Audio</h3>
+
+<p>We can use jack-play to make sure JACK audio is working.  It's part of the jack-tools package in Debian-based distros:</p>
+
+<code><blockquote><pre>$ sudo apt-get install jack-tools
+</pre></blockquote></code>
+
+<p>We'll use sox to create a WAV file for testing.</p>
+
+<code><blockquote><pre>$ sox -b 16 -n test.wav rate 44100 channels 2 synth 1 sine 440 gain -1
+</pre></blockquote></code>
+
+<p>Next, we need to tell jack-play what JACK port to connect to.  This is done via the JACK_PLAY_CONNECT_TO environment variable.</p>
+
+<code><blockquote><pre>$ export JACK_PLAY_CONNECT_TO=system:playback_%d
+</pre></blockquote></code>
+
+<p>The "%d" is expanded to the channel number while connecting.  So, with a stereo WAV file and the above value, jack-play will connect to system:playback_1 and system:playback_2.</p>
+
+<p>Finally, we can test JACK with jack-play:</p>
+
+<code><blockquote><pre>$ jack-play test.wav
+</pre></blockquote></code>
+
+<p><i>Note: In older versions, jack-play was called jack.play, so if the above doesn't work, try a dot instead of a hyphen.</i></p>
+
+<h3>FluidSynth and JACK</h3>
+
+<p>To run fluidsynth with JACK, bring up another terminal, and:</p>
+
+<code><blockquote><pre>$ fluidsynth --server --audio-driver=jack --connect-jack-outputs /usr/share/sounds/sf2/FluidR3_GM.sf2
+</pre></blockquote></code>
+
+<p>And finally, to test, bring up another terminal and use aplaymidi to send a MIDI file to fluidsynth's port.  Be sure to check which port fluidsynth is on, as it can change.  See <a href="http://tedfelix.com/linux/linux-midi.html#aplaymidi">aplaymidi</a> above.</p>
+
+<p>To bring everything down, first stop fluidsynth by entering the "quit" command at fluidsynth's "&gt;" prompt.  Then switch to the terminal that is running JACK and hit Ctrl-C.  Worst-case, you can use killall to stop JACK:</p>
+
+<code><blockquote><pre>$ killall jackd
+</pre></blockquote></code>
+
+<p><b>Important Note!</b>  JACK takes over the soundcard on your computer.  This means that your usual audio and video players will be broken while JACK is running.  This includes rhythmbox, amarok, vlc, Adobe flash, etc....  I oftentimes find myself wondering why youtube videos aren't working.  Then I remember that I left JACK running.  So, if your normal audio and video players aren't working, try "killall jackd".</p>
+
+<h3><a id="jackdrc">.jackdrc</a></h3>
+<p>Since most Linux music-making applications depend on JACK, and JACK's defaults are not suitable for music-making, we need to set up a .jackdrc file.  The .jackdrc file lives in your home directory and it contains the command line that programs should use to start JACK if it isn't already running.  Here's what mine contains:</p>
+
+<code><blockquote><pre>/usr/bin/jackd -d alsa --device hw:0 --rate 44100 --period 128
+</pre></blockquote></code>
+
+<p>The only difference between this and what we did at the command line is the full pathname to jackd, /usr/bin/jackd.  Make sure you set up a .jackdrc file before continuing.</p>
+
+<p>Note: qjackctl (the JACK GUI) will clobber your .jackdrc file without warning.  If you find .jackdrc useful, you should keep a backup of it and avoid qjackctl.</p>
+
+<!-- ******************************************************************** -->
+
+<h2>Audio Script</h2>
+<p>We can pull all of the above together into a script for starting JACK and FluidSynth:</p>
+
+<code><blockquote><pre>#!/bin/bash
+
+# Script to launch audio servers for music-making.
+
+case $1 in
+
+  start )
+    echo Starting JACK...
+
+    # Start JACK
+    # As of Ubuntu 12.10, a period of 128 is needed for good fluidsynth
+    # timing.  (jackd 1.9.9, fluidsynth 1.1.5)
+    # If you aren't running pulseaudio, you can remove the pasuspender line.
+    pasuspender -- \
+        jackd -d alsa --device hw:0 --rate 44100 --period 128 \
+            &amp;&gt;/tmp/jackd.out &amp;
+
+    sleep .5
+
+    echo Starting fluidsynth...
+
+    # Start fluidsynth
+    fluidsynth --server --no-shell --audio-driver=jack \
+        --connect-jack-outputs --reverb=0 --chorus=0 --gain=0.8 \
+        /usr/share/sounds/sf2/FluidR3_GM.sf2 \
+        &amp;&gt;/tmp/fluidsynth.out &amp;
+
+    sleep 1
+
+    if pgrep -l jackd &amp;&amp; pgrep -l fluidsynth
+    then
+      echo Audio servers running.
+    else
+      echo There was a problem starting the audio servers.
+    fi
+
+    ;;
+
+  stop )
+    killall fluidsynth
+    killall jackd
+    echo Audio servers stopped.
+    ;;
+
+  * )
+    echo Please specify start or stop...
+    ;;
+esac
+</pre></blockquote></code>
+
+<p>I call it "audio" and keep it in ~/bin.  To use it, just tell it whether you want to start or stop the audio servers:</p>
+
+<code><blockquote><pre>$ audio start
+$ audio stop
+</pre></blockquote></code>
+
+<p>It's not perfect (piping the output to a fixed name in /tmp is never a good idea), but it's a start.  Feel free to make improvements and send them to me.  It is licensed under the GPLv3+.</p>
+
+<p>At this point, we are ready to start looking at music-making software.  If you would prefer to see how starting JACK and FluidSynth can be done with a GUI, jump down to the <a href="http://tedfelix.com/linux/linux-midi.html#qjackctl">qjackctl</a> and <a href="http://tedfelix.com/linux/linux-midi.html#qsynth">qsynth</a> sections.</p>
+
+<p>Make sure you've got JACK and FluidSynth running before continuing.</p>
+
+<!-- ******************************************************************** -->
+
+<h2><a id="virtual-midi-keyboard">A Virtual MIDI Keyboard</a></h2>
+
+<p><img src="./Ted&#39;s Linux MIDI Guide_files/vmpk-0.4.0.png"></p>
+
+<p>In case you don't have a physical MIDI keyboard, you can use a virtual one.  For this tutorial, we'll use <a href="http://vmpk.sourceforge.net/">vmpk</a>, the Virtual MIDI Piano Keyboard.  To install and run:</p>
+
+<code><blockquote><pre>$ sudo apt-get install vmpk
+$ vmpk &amp;
+</pre></blockquote></code>
+
+<p>It's not going to work until we connect it to fluidsynth.  We'll use the "aconnect" command to do that.  First, we need to check which MIDI ports fluidsynth and vmpk are on.  Note that the options for aconnect are backwards from what you might expect.  The "-i" option displays the output ports, while the "-o" option displays the input ports.  This is from the point of view of aconnect rather than the point of view of the devices themselves.  So, let's try "aconnect -i" to see the MIDI "output" ports (those that aconnect can "input" from):</p>
+
+<code><blockquote><pre>$ aconnect -i
+client 0: 'System' [type=kernel]
+    0 'Timer           '
+    1 'Announce        '
+client 14: 'Midi Through' [type=kernel]
+    0 'Midi Through Port-0'
+client 129: 'VMPK Output' [type=user]
+    0 'VMPK Output     '
+</pre></blockquote></code>
+
+<p>From this we can see that "VMPK Output" is on port 129:0.  Note that the "0" on the 'VMPK Output' line is the 0 after the colon.  Next we use "aconnect -o" to make sure fluidsynth is where it usually is:</p>
+
+<code><blockquote><pre>$ aconnect -o
+client 14: 'Midi Through' [type=kernel]
+    0 'Midi Through Port-0'
+client 128: 'FLUID Synth (3206)' [type=user]
+    0 'Synth input port (3206:0)'
+client 130: 'VMPK Input' [type=user]
+    0 'VMPK Input      '
+</pre></blockquote></code>
+
+<p>Sure enough, fluidsynth is at 128:0.  Now to connect the two together:</p>
+
+<code><blockquote><pre>$ aconnect 129:0 128:0
+</pre></blockquote></code>
+
+<p>And you should hear piano when you play the keys on vmpk.  If not, try changing the instrument in the "Program:" field.  Sometimes fluidsynth needs a reminder of what instrument to play.</p>
+
+<h3>vmpk Launch and Connect Script</h3>
+
+<p>In true Un*x/Linux fashion, we can automate the connection with a script:</p>
+
+<code><blockquote><pre>#!/bin/bash
+
+# Launch vmpk and connect it to fluidsynth.
+# Based on a script by Antonio Bonifati.
+
+# If vmpk isn't running
+if ! pgrep "^vmpk$"
+then
+    # Launch vmpk
+    vmpk &amp;
+    # Wait for it to come up.
+    sleep 1
+fi
+
+# Use aconnect to get the ports
+vmpkport=$(aconnect -i | grep "client.*VMPK Output" | cut -d ' ' -f 2)0
+synthport=$(aconnect -o | grep "FLUID Synth" | cut -d ' ' -f 2)0
+
+echo vmpk output port: $vmpkport
+echo fluidsynth input port: $synthport
+
+# Connect the ports
+aconnect $vmpkport $synthport
+</pre></blockquote></code>
+
+<!-- ******************************************************************** -->
+
+<h2>Patchage</h2>
+<p>If you prefer something a little more graphical when connecting MIDI devices, try <a href="http://drobilla.net/software/patchage/">Patchage</a>:</p>
+
+<code><blockquote><pre>$ sudo apt-get install patchage
+$ patchage &amp;
+</pre></blockquote></code>
+
+<!-- <p><img src="patchage-0.5.0.png" /></p> -->
+<p><img src="./Ted&#39;s Linux MIDI Guide_files/patchage-1.0.0.png"></p>
+
+<p>Patchage shows your MIDI devices as boxes.  You can make connections by clicking on the colored connectors (with white text) at either end.  You can also break connections the same way.</p>
+
+<p>Note that Patchage launches JACK if it isn't already running.  Make sure you've got a proper .jackdrc file in your home directory or JACK will be launched with defaults.  See <a href="http://tedfelix.com/linux/linux-midi.html#jackdrc">.jackdrc</a> above.  If you're avoiding JACK for testing reasons, you'll need to use aconnect instead of Patchage.  You can also disconnect Patchage from JACK by using Patchage's System menu.</p>
+
+<!-- ******************************************************************** -->
+
+<h2>A Hardware MIDI Controller</h2>
+
+<p><img src="./Ted&#39;s Linux MIDI Guide_files/akai-lpk25.jpg"></p>
+
+<p>There are several MIDI controllers on the market that connect via USB.  I have the (adorable) <a href="http://www.akaipro.com/products/keyboard-controllers/lpk-25">Akai LPK25</a>.  When I plug it in and take a look at my MIDI devices, I see the following:</p>
+
+<code><blockquote><pre>$ aconnect -i
+client 0: 'System' [type=kernel]
+    0 'Timer           '
+    1 'Announce        '
+client 14: 'Midi Through' [type=kernel]
+    0 'Midi Through Port-0'
+client 20: 'LPK25' [type=kernel]
+    0 'LPK25 MIDI 1    '
+</pre></blockquote></code>
+
+<p>So 20:0 is the LPK25.  I can connect it to fluidsynth (which happens to be at 129:0 for me right now) using Patchage or aconnect:</p>
+
+<code><blockquote><pre>$ aconnect 20:0 129:0
+</pre></blockquote></code>
+
+<h3>MIDI Device Troubleshooting</h3>
+
+<p>The <b>dmesg</b> and <b>lsusb</b> commands can be helpful when diagnosing hardware problems.  When I plug in the LPK25, I see this at the end of <b>dmesg</b>:</p>
+
+<code><blockquote><pre>[54428.182449] usb 2-1.1: new full-speed USB device number 6 using ehci-pci
+[54428.268927] usb 2-1.1: New USB device found, idVendor=09e8, idProduct=0076
+[54428.268936] usb 2-1.1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[54428.268942] usb 2-1.1: Product: LPK25
+[54428.268948] usb 2-1.1: Manufacturer: AKAI professional LLC
+</pre></blockquote></code>
+
+<p>Then <b>lsusb</b> shows me that it is connected:</p>
+
+<code><blockquote><pre>Bus 002 Device 006: ID 09e8:0076 AKAI  Professional M.I. Corp. LPK25 MIDI Keyboard
+</pre></blockquote></code>
+
+<!-- ******************************************************************** -->
+
+<h2>A Hardware MIDI Interface</h2>
+<p>If you want to connect external MIDI devices like keyboards with MIDI ports, you'll need a hardware MIDI interface like the <a href="http://www.m-audio.com/products/view/uno">M-Audio Uno MIDI Interface</a>.  When I plug mine in, I get the following new port:</p>
+
+<code><blockquote><pre>client 20: 'USB Uno MIDI Interface' [type=kernel]
+    0 'USB Uno MIDI Interface MIDI 1'
+</pre></blockquote></code>
+
+<p>Once you've got the port showing up, you can connect a keyboard or other MIDI device to the interface and talk to it through that port.</p>
+
+<!-- ******************************************************************** -->
+
+<h2><a id="qjackctl">qjackctl</a></h2>
+<p><img src="./Ted&#39;s Linux MIDI Guide_files/qjackctl-0.4.2.png"></p>
+
+<p>qjackctl provides a GUI for JACK.  To install and run:</p>
+
+<code><blockquote><pre>$ sudo apt-get install qjackctl
+$ qjackctl &amp;
+</pre></blockquote></code>
+
+<p>You'll need to configure JACK through qjackctl before using it.  Press the "Setup..." button to get the Setup dialog.  Many of the settings will be set to "(default)" and that should be ok.  Just make sure "Frames/Period" is set to 128, and "Sample Rate" is set to 44100.  Also, if you need to use an ALSA device name other than hw:0, check the "Interface" field.  See <a href="http://tedfelix.com/linux/linux-midi.html#alsa-device-names">ALSA Device Names</a> above.</p>
+
+<p><img src="./Ted&#39;s Linux MIDI Guide_files/qjackctl-0.4.2-setup.png"></p>
+
+<p>Click Ok to close the Setup dialog and press the "Start" button to start JACK.</p>
+
+<p>One annoying thing about qjackctl is that it will overwrite your .jackdrc file without your permission.  Bear this in mind in case things aren't working as expected.</p>
+
+<!-- ******************************************************************** -->
+
+<h2><a id="qsynth">Qsynth</a></h2>
+
+<p><img src="./Ted&#39;s Linux MIDI Guide_files/qsynth-0.3.6.png"></p>
+
+<p>Qsynth provides a GUI for FluidSynth.  To install and run:</p>
+
+<code><blockquote><pre>$ sudo apt-get install qsynth
+$ sudo apt-get install fluid-soundfont-gm
+$ qsynth &amp;
+</pre></blockquote></code>  
+
+<p>Next you'll need to load the soundfont.  Press the "Setup..." button and switch to the "Soundfonts" tab.  Click on the Open... button and open the soundfont that we've been using with the command line.</p>
+
+<p><img src="./Ted&#39;s Linux MIDI Guide_files/qsynth-0.3.6-soundfonts.png"></p>
+
+<p>Now test with aplaymidi as usual:</p>
+
+<code><blockquote><pre>$ aplaymidi -p 128:0 song.mid
+</pre></blockquote></code>
+
+<p>See <a href="http://tedfelix.com/linux/linux-midi.html#aplaymidi">aplaymidi</a> above.</p>
+
+<h3>Qsynth Troubleshooting</h3>
+
+<p><i>Note to self: Crashing?  Be sure to "export -n QT_FATAL_WARNINGS" before running qsynth.  It issues a number of warnings related to missing translations.</i></p>
+
+<p>Qsynth will launch JACK using the .jackdrc file if JACK isn't running.  Make sure your .jackdrc file is set up properly.  See <a href="http://tedfelix.com/linux/linux-midi.html#jackdrc">.jackdrc</a> above.</p>
+
+<p>Press the Messages button to see the startup messages for JACK and Qsynth.</p>
+
+<p>If Qsynth isn't working, try using ALSA instead of JACK.  Launch Qsynth, change the Setup... &gt; Audio tab to use ALSA for the audio driver.  Close Qsynth.  Stop JACK.  Then restart Qsynth.  Now pipe something in with aplaymidi.  Switch the configuration back to JACK when you're done testing.</p>
+
+<p>If it appears that JACK isn't working properly, you might need to make sure JACK is talking to the correct audio device.  Sometimes it gets confused and tries to send audio to a MIDI interface.  See <a href="http://tedfelix.com/linux/linux-midi.html#alsa-device-names">ALSA Device Names</a> above.</p>
+
+<!-- ******************************************************************** -->
+
+<h2>MIDI Sequencers</h2>
+<p>Once you've figured out how to get all your MIDI hardware and softsynths set up, you can install and use a MIDI sequencer for serious music composition work.  Two of the best are Rosegarden and Hydrogen.  (Full disclosure: I'm a Rosegarden developer, so I'm quite biased.)</p>
+
+<h3>Rosegarden</h3>
+<p><a href="http://www.rosegardenmusic.com/">Rosegarden</a> is a MIDI sequencer that offers multi-track recording and playback along with notation editing.</p>
+
+<p><img src="./Ted&#39;s Linux MIDI Guide_files/rosegarden.png"></p>
+
+<p>Rosegarden does require a little configuration to get it working.  Sometimes it picks things up automagically, but other times you'll need to go to Studio &gt; Manage MIDI Devices... in the menu and there you will be able to connect Rosegarden to your soft synths, keyboards, and other MIDI devices.  Here's a screenshot of Rosegarden set up for fluidsynth and my Akai LPK25:</p>
+
+<p><img src="./Ted&#39;s Linux MIDI Guide_files/rosegarden-manage-midi-devices.png"></p>
+
+<h3>Hydrogen</h3>
+<p><a href="http://www.hydrogen-music.org/hcms/">Hydrogen</a> is a drum sequencer.  It has its own softsynth built in, so it comes up ready to go.</p>
+
+<p><img src="./Ted&#39;s Linux MIDI Guide_files/hydrogen.png"></p>
+
+<!-- ******************************************************************** -->
+
+<h2>Audio Software</h2>
+<p><a href="http://audacity.sourceforge.net/">Audacity</a> - Sound editor.  Also does multi-track recording.</p>
+
+<p><a href="http://ardour.org/">Ardour</a> - Digital audio workstation.</p>
+
+<!-- ******************************************************************** -->
+
+<h2>MIDI Troubleshooting Tools</h2>
+
+<p><a href="http://sourceforge.net/projects/kmidimon/">kmidimon</a> - Allows monitoring of the data going over a MIDI connection.  With patchage (or aconnect) you can set up a Y-cable to monitor without disturbing your setup.  You can also load MIDI files and examine their contents.</p>
+
+<p>aseqdump (in the alsa-utils package) - Another MIDI monitor.  This one is a command-line tool that dumps the MIDI data to the console as text.</p> 
+
+<!-- ******************************************************************** -->
+
+<h2><a id="low-latency-kernel">Low-latency Kernel</a></h2>
+
+<p>Back in <a href="http://tedfelix.com/linux/linux-midi.html#installing-a-low-latency-kernel">Installing a Low Latency Kernel</a>, I showed how to check whether you have a low latency kernel installed and whether the clock frequency was set to 1000Hz.  If you discovered that your kernel was missing one of these key attributes, there are three main ways to remedy this.</p>
+
+<h3>Distro Package</h3>
+
+<p>The first way would be to see if your distro already has a low-latency kernel available and install it.  Ubuntu has a "linux-lowlatency" package you can install:</p>
+
+<code><blockquote><pre>$ sudo apt-get install linux-lowlatency
+</pre></blockquote></code>
+
+<p>After that installs, reboot and go through the steps in <a href="http://tedfelix.com/linux/linux-midi.html#installing-a-low-latency-kernel">Installing a Low Latency Kernel</a> to make sure everything is correct.</p>
+
+<h3>Multimedia Distro</h3>
+
+<p>The second way would be to use a multimedia distro like <a href="http://ubuntustudio.org/">Ubuntu Studio</a> or <a href="http://www.bandshed.net/AVLinux.html">AV Linux</a>.  These sorts of distros install a low-latency kernel by default.</p>
+
+<h3>Build Your Own Kernel</h3>
+
+<p>And finally, if you don't mind building the kernel, you can adjust the configuration to get a low-latency kernel.  In the category "Processor type and features," you'll find two key settings.  The first is "Preemption Model" which should be set to "Preemptible Kernel (Low-Latency Desktop)".  The second is "Timer frequency" which should be set to 1000Hz for decent audio performance.</p><p>
+
+</p><p>My (somewhat outdated) steps for building my own kernel are in my <a href="http://tedfelix.com/linux/kernel-build.html">Linux Kernel Build HOWTO</a>.</p>
+
+<h3>Kernel Troubleshooting</h3>
+
+<p>Usually, the low-latency kernel, or the latest kernel you've built is the one that gets booted.  If this doesn't appear to be happening, reboot and hold down the left shift key when the system is coming back up.  This should give you the GRUB menu where you can select a specific kernel.</p>
+
+<!-- ******************************************************************** -->
+
+<h2><a id="killing-pulseaudio">Killing pulseaudio</a></h2>
+
+<p>pulseaudio can get in the way of JACK sometimes.  Unfortunately, you can't use the "kill" command to stop pulseaudio.  pulseaudio is designed to be very aggressive about staying up and it will restart itself whenever it is killed.  Fortunately there are a number of ways to stop pulseaudio and keep it from coming back.</p>
+
+<p>First, determine whether pulseaudio is running using pgrep:</p>
+
+<code><blockquote><pre>$ pgrep -a pulseaudio
+1013 /usr/bin/pulseaudio --daemonize=no
+3296 /usr/bin/pulseaudio --start --log-target=syslog
+</pre></blockquote></code>
+
+<p>If you see a number and a command line after you run that (I got two numbers and command lines, you'll get different numbers), then pulseaudio is running.  The number is the process ID.</p>
+
+<p><i>Note: Stopping pulseaudio can have a negative effect on audio in all other apps.  Problems can range from absolutely no sound to a broken volume control.  I frequently get tripped up by this.  E.g. I've got pulseaudio stopped and I try to watch a video in my web browser, or try to watch a movie.  The video will not play.  Be sure to restart pulseaudio when you want to use audio in other apps.</i></p>
+
+<p>Here are three ways to get pulseaudio out of the way:</p>
+
+<h3>pasuspender</h3>
+
+<p>The most subtle way is to use pasuspender which will suspend pulseaudio while another program is running.  This is most useful with JACK:</p>
+
+<code><blockquote><pre>$ pasuspender -- jackd -d alsa --device hw:0 --rate 44100 --period 128
+</pre></blockquote></code>
+
+<p><i>Newer versions of JACK seem to be aware of pulseaudio and suspend it for us.  This might be more useful for running fluidsynth against ALSA.</i></p>
+
+<h3>pacmd suspend</h3>
+
+<p>You can also suspend pulseaudio indefinitely (or until you logout) like this:</p>
+
+<code><blockquote><pre>$ echo "suspend 1" | pacmd
+</pre></blockquote></code>
+
+<p>To unsuspend:</p>
+
+<code><blockquote><pre>$ echo "suspend 0" | pacmd
+</pre></blockquote></code>
+
+<h3>At Boot</h3>
+
+<p>If you'd like to get rid of pulseaudio at boot, edit /etc/pulse/client.conf and set autospawn to no:</p>
+
+<code><blockquote><pre>autospawn = no
+</pre></blockquote></code>
+
+<p>After a reboot, pulseaudio will not come up unless you ask for it manually:</p>
+
+<code><blockquote><pre>$ pulseaudio --start
+</pre></blockquote></code>
+
+<p>For more info, check out these pulseaudio man pages: <a href="http://linux.die.net/man/1/pactl">pactl(1)</a>, <a href="http://linux.die.net/man/1/pasuspender">pasuspender(1)</a>, and <a href="http://linux.die.net/man/5/pulse-client.conf">pulse-client.conf(5)</a>.  "apropos pulse" gives a rather complete list.  Also see <a href="http://www.linuxplanet.com/linuxplanet/tutorials/7130/2">Carla Schroder's tip</a> and <a href="http://jackaudio.org/faq/pulseaudio_and_jack.html">JACK's advice for getting JACK and pulseaudio to coexist</a>.</p>
+
+<!-- ******************************************************************** -->
+
+<h2>JACK and Headphones</h2>
+<p>On my laptop (an HP G62) I noticed that whenever I plugged in my headphones, the speakers would go off, but there would be no sound on the headphones.  It turns out that my particular laptop has separate output channels for the speakers and the headphones.  If you happen to be unlucky enough to have the same problem, see my <a href="http://tedfelix.com/linux/jack-headphones.html">JACK and Headphones</a> page for details.  Later versions of the Linux kernel fixed this for me.</p>
+
+<!-- ******************************************************************** -->
+
+<h2>TODO</h2>
+
+<ul>
+  <li>Test against Ubuntu Studio</li>
+</ul>
+
+<!-- ******************************************************************** -->
+
+<h2>License</h2>
+<p>Copyright (C) 2011-2018, Ted Felix</p>
+
+<p>Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.3 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. See <a href="http://www.gnu.org/licenses/fdl.html">http://www.gnu.org/licenses/fdl.html</a> for the full text of this license.</p>
+
+<p>&lt;- <a href="http://tedfelix.com/linux/index.html">Back</a> to my Linux page.</p>
+
+<font size="-1"><i>
+Copyright ©2011-2018, <a href="http://tedfelix.com/index.html">Ted Felix</a>.
+<a href="http://tedfelix.com/disclaimer.html">Disclaimer</a>
+</i></font>
+
+
+
+</body></html>

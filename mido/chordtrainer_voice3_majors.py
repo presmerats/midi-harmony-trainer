@@ -4,6 +4,17 @@ from pprint import pprint
 import mingus.core.chords as chords
 import random
 
+
+from chordTTS import *
+
+
+
+
+# TTS objects
+picotts = PicoTTS()
+p = pyaudio.PyAudio()
+
+
 outport = mido.open_output()
 
 
@@ -57,13 +68,13 @@ notes = { i:note[i%12]  for i in range(128) }
 
 
 chord_types = {
-'major': [4,3],
-'minor': [3,4],
+#'major': [4,3],
+# 'minor': [3,4],
 '': [4,3,4],
-'7':[4,3,3],
-'m7':[3,4,3],
-'7b5':[3,3,4],
-'dim7':[3,3,3]
+# '7':[4,3,3],
+# 'm7':[3,4,3],
+# '7b5':[3,3,4],
+# 'dim7':[3,3,3]
 }
 
 
@@ -184,6 +195,7 @@ with mido.open_input(input1) as inport:
 
 
         print(chord_name)
+        teacher_say_chords(chord_name, picotts, p)
 
         
 
@@ -208,7 +220,11 @@ with mido.open_input(input1) as inport:
 
             if match_chord(pressed_notes, thechord):
                 print("Correct!", parsed_chord )
+                teacher_say("Correct chord!", picotts, p)
                 break
             
             
             
+
+
+p.terminate()

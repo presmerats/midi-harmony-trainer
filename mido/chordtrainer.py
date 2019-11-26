@@ -82,10 +82,10 @@ class ChordTrainer(MusicTheory):
         
         for interval in chord_type:
             # add semitones to find next note
-            posi = (posi + interval) % len(note)
+            posi = (posi + interval) % len(self.note)
 
             # update curernt note 
-            current_note = note[posi]
+            current_note = self.note[posi]
             final_chord.append(current_note)
 
         return final_chord

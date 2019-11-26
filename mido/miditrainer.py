@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
             exercice.teacher_ask_new_question()
             
-            for msg in self.inport:
+            for msg in inport:
                 exercice.read_answer()
                 if exercice.evaluate():
                     break

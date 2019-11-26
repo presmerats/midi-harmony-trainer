@@ -1,0 +1,3 @@
+/home/pi/midi-harmony-trainer/mido/config.sh start
+/usr/bin/amixer set Master 100%
+/usr/bin/aplay -D hw:0 /usr/share/sounds/alsa/Side_Right.wav

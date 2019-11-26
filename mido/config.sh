@@ -1,10 +1,18 @@
 #!/bin/bash
 
 # Script to launch audio servers for music-making.
+STATUS_FILE=~/.midi-trainer.status
 
 case $1 in
 
   start )
+    # verification
+    if [ $(aconnect -l | grep "Connecting To: 128:0"| wc -l) == 1 ]; then
+        echo "Midi piano already started"
+	exit 0
+    fi
+
+
     echo Starting JACK...
 
     # Start JACK
@@ -32,6 +40,7 @@ case $1 in
       echo Audio servers running.
     else
       echo There was a problem starting the audio servers.
+      #exit
     fi
 
     # Use aconnect to get the ports
@@ -52,13 +61,14 @@ case $1 in
 		echo fluidsynth input port: $synthport
 		aconnect $keystationport $synthport
 	done
-		
+        echo "aconnect $keystationport $synthport" > $STATUS_FILE		
 
     ;;
 
   stop )
     killall fluidsynth
     killall jackd
+    rm ~/.midi-trainer.status
     echo Audio servers stopped.
     ;;
 

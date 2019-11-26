@@ -31,10 +31,10 @@ class ChordTrainer(MusicTheory):
 
     def read_answer(self, msg):
         if 'note' not in dir(msg):
-            continue
+            return
             
         if msg.is_meta:
-            continue
+            return
 
 
         current_note = self.notes[msg.note]

@@ -7,6 +7,7 @@ import sys
 import StringIO
 from mido import Message
 from mido import MidiFile
+import mido
 from picotts import PicoTTS
 
 

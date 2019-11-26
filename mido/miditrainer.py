@@ -32,7 +32,7 @@ if __name__ == '__main__':
             exercice.teacher_ask_new_question()
             
             for msg in inport:
-                exercice.read_answer()
+                exercice.read_answer(msg)
                 if exercice.evaluate():
                     break
 

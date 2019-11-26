@@ -31,7 +31,7 @@ class MusicTheory():
         ('A#','Bb'),
         ('B','A##','Cb')]
 
-    notes = { i:note[i%12]  for i in range(128) }
+    notes = { i:self.note[i%12]  for i in range(128) }
 
 
     chord_types = {

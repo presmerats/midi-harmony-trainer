@@ -38,7 +38,7 @@ ok- Key signatures
 git clone https://github.com/presmerats/midi-harmony-trainer.git
 ```
 - audio setup from scratch
-    + sudo apt install git python-dev python-pip python3 alsa-utils vim fluidsynth python3-pip python3-dev fluid-soundfont-gm jackd2 jack-tools pulseaudio
+    + sudo apt install git python-dev python-pip python3 alsa-utils vim fluidsynth python3-pip python3-dev fluid-soundfont-gm jackd2 jack-tools pulseaudio python-pyaudio
     + Enable realtime priority set to no
     + #set raspi-config pi user autologin  
     + add .bashrc lines to midi user
@@ -49,6 +49,27 @@ git clone https://github.com/presmerats/midi-harmony-trainer.git
 
 ```
 - picotts setup
+```
+wget -q https://ftp-master.debian.org/keys/release-10.asc -O- | sudo apt-key add -
+echo "deb http://deb.debian.org/debian buster non-free" | sudo tee -a /etc/apt/sources.list
+sudo apt-get update
+sudo apt-get install libttspico-utils
+```
+- python2 setup
+    + pip install mido mingus py-picotts
+- python3 port 
+    + rewrite mingus adapted to python3 syntax, only mingus.core.chords
+    + pyaudio
+```
+$ sudo apt-get install git
+$ sudo git clone http://people.csail.mit.edu/hubert/git/pyaudio.git
+$ sudo apt-get install libportaudio0 libportaudio2 libportaudiocpp0 portaudio19-dev
+$ sudo apt-get install python3-dev
+$ cd pyaudio
+$ sudo python3 setup.py install
+```
+
+- python3 pyaudio? 
 - GPIO setup
     +  GPIO tests button + leds
     +  add button logic: idle, chords, intervals, scales

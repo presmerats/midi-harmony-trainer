@@ -2,5 +2,5 @@ mido==1.2.9
 mingus==0.5.1
 pprint==0.1
 python-rtmidi==1.3.0
-pyaudio
-picoTTS
+py-picotts
+

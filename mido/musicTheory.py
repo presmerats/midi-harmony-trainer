@@ -1,5 +1,5 @@
 
-class MusicTheory(Object):
+class MusicTheory(object):
 
     degrees = ['C','D','E','F','G','A','B']
 

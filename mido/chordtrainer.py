@@ -174,13 +174,18 @@ class ChordTrainer(MusicTheory):
 
         
     def teacher_say(self, msg, picotts, p):
-        try:
-            if isinstance(msg, str):
-                speak_for_me(msg,picotts,p)
-            elif isinstance(msg, list):
-                speak_for_me(msg[0], picotts,p)
-        except:
-            print("Error at teacher_say!")
+        if isinstance(msg, str):
+            speak_for_me(msg,picotts,p)
+        elif isinstance(msg, list):
+            speak_for_me(msg[0], picotts,p)
+    
+        # try:
+        #     if isinstance(msg, str):
+        #         speak_for_me(msg,picotts,p)
+        #     elif isinstance(msg, list):
+        #         speak_for_me(msg[0], picotts,p)
+        # except:
+        #     print("Error at teacher_say!")
 
     def teacher_say_chords(self, chord_list, picotts, p):
 

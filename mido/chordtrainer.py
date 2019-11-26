@@ -145,7 +145,7 @@ class ChordTrainer(MusicTheory):
     def find_note_position(self, real_note):
 
         if isinstance(real_note,str):
-            real_note = self.(real_note)
+            real_note = self.find_real_note(real_note)
 
         return self.note.index(real_note)
 

@@ -70,7 +70,7 @@ class ChordTrainer(MusicTheory):
         root = self.root_notes[random.randint(0,len(self.root_notes)-1)]
         
         chord_types_keys = list(self.chord_types.keys())
-        chord_type = self.chord_types[self.chord_types_keys[random.randint(0,len(self.chord_types_keys)-1)]]
+        chord_type = self.chord_types[chord_types_keys[random.randint(0,len(chord_types_keys)-1)]]
         
 
         final_chord = [root,]

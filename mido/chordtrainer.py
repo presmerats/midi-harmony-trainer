@@ -176,11 +176,13 @@ class ChordTrainer(MusicTheory):
 
         
     def teacher_say(self, msg, picotts, p):
-        if isinstance(msg, str):
-            speak_for_me(msg,picotts,p)
-        elif isinstance(msg, list):
-            speak_for_me(msg[0], picotts,p)
-
+        try:
+            if isinstance(msg, str):
+                speak_for_me(msg,picotts,p)
+            elif isinstance(msg, list):
+                speak_for_me(msg[0], picotts,p)
+        except:
+            print("Error at teacher_say!")
 
     def teacher_say_chords(self, chord_list, picotts, p):
 
@@ -191,5 +193,7 @@ class ChordTrainer(MusicTheory):
         schord = schord.replace('##',' double sharp ')
         schord = schord.replace('#',' sharp ')
         
-
-        speak_for_me(schord, picotts,p)
+        try:
+            speak_for_me(schord, picotts,p)
+        except:
+            print("Error at teacher_say_chords!")

@@ -14,7 +14,7 @@ class ChordTrainer(MusicTheory):
     picotts, p = None, None 
 
     def __init__(self, picotts, p, inport):
-        super(MusicTheory, self).__init__()
+        super(ChordTrainer).__init__()
         self.picotts = picotts
         self.p = p 
         self.inport = inport 

@@ -24,16 +24,18 @@ if __name__ == '__main__':
     with mido.open_input(input1) as inport:
 
         # ini exercice type
-        exercice = ChordTrainer(picotts, p, inport)
+        exercice = ChordTrainer(picotts, p)
 
 
         while(True):
 
             exercice.teacher_ask_new_question()
             
-            while not exercice.evaluate():
+            for msg in self.inport:
                 exercice.read_answer()
-              
+                if exercice.evaluate()
+                    break
+
             # change exercice if necessary  
             exercice = read_GPIO(exercice)    
 

@@ -33,7 +33,7 @@ if __name__ == '__main__':
             
             for msg in self.inport:
                 exercice.read_answer()
-                if exercice.evaluate()
+                if exercice.evaluate():
                     break
 
             # change exercice if necessary  

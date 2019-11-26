@@ -13,7 +13,8 @@ class ChordTrainer(MusicTheory):
     thechord, chord_name, parsed_chord = None, None, None 
     picotts, p = None, None 
 
-    def _init_(picotts, p, inport):
+    def __init__(picotts, p, inport):
+        super().__init__()
         self.picotts = picotts
         self.p = p 
         self.inport = inport 

@@ -31,7 +31,7 @@ class MusicTheory():
         ('A#','Bb'),
         ('B','A##','Cb')]
 
-    notes = { i:self.note[i%12]  for i in range(128) }
+    notes = None
 
 
     chord_types = {
@@ -43,3 +43,7 @@ class MusicTheory():
     # '7b5':[3,3,4],
     # 'dim7':[3,3,3]
     }
+
+    def __init__():
+        self.notes = { i:self.note[i%12]  for i in range(128) }
+

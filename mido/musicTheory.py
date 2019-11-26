@@ -44,6 +44,6 @@ class MusicTheory():
     # 'dim7':[3,3,3]
     }
 
-    def __init__():
+    def __init__(self,):
         self.notes = { i:self.note[i%12]  for i in range(128) }
 

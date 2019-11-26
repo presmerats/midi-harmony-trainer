@@ -78,7 +78,7 @@ class ChordTrainer(MusicTheory):
         # find position of root
         current_note = root
         #final_chord.append(find_real_note(current_note))
-        posi = find_note_position(current_note)
+        posi = self.find_note_position(current_note)
         
         for interval in chord_type:
             # add semitones to find next note
@@ -145,7 +145,7 @@ class ChordTrainer(MusicTheory):
     def find_note_position(self, real_note):
 
         if isinstance(real_note,str):
-            real_note = find_real_note(real_note)
+            real_note = self.(real_note)
 
         return self.note.index(real_note)
 
@@ -154,7 +154,7 @@ class ChordTrainer(MusicTheory):
     def match_chord(self, pressed_notes, thechord):
 
         # convert to real chord
-        thechord2 = [ thechord[i] if i>0 else find_real_note(thechord[i]) for i in range(len(thechord)) ]
+        thechord2 = [ thechord[i] if i>0 else self.find_real_note(thechord[i]) for i in range(len(thechord)) ]
 
         #print("real chord", thechord2)
 

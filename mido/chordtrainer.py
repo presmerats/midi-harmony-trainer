@@ -13,11 +13,11 @@ class ChordTrainer(MusicTheory):
     thechord, chord_name, parsed_chord = None, None, None 
     picotts, p = None, None 
 
-    def __init__(self, picotts, p, inport):
+    def __init__(self, picotts, p):
         super(ChordTrainer, self).__init__()
         self.picotts = picotts
         self.p = p 
-        self.inport = inport 
+        #self.inport = inport 
         self.pressed_notes = []
 
 
@@ -29,26 +29,24 @@ class ChordTrainer(MusicTheory):
             
 
 
-    def read_answer(self,):
-
-        for msg in self.inport:
-            if 'note' not in dir(msg):
-                continue
-                
-            if msg.is_meta:
-                continue
+    def read_answer(self, msg):
+        if 'note' not in dir(msg):
+            continue
+            
+        if msg.is_meta:
+            continue
 
 
-            current_note = self.notes[msg.note]
-            if msg.velocity > 0 :
-                self.pressed_notes.append((msg.note,current_note))
-            else:
-                try:
-                    foundi = self.pressed_notes.index((msg.note,current_note))
-                    if foundi > -1:
-                        self.pressed_notes.pop(foundi)
-                except:
-                    pass
+        current_note = self.notes[msg.note]
+        if msg.velocity > 0 :
+            self.pressed_notes.append((msg.note,current_note))
+        else:
+            try:
+                foundi = self.pressed_notes.index((msg.note,current_note))
+                if foundi > -1:
+                    self.pressed_notes.pop(foundi)
+            except:
+                pass
 
             
             

@@ -5,6 +5,8 @@ import wave
 import  time
 import sys
 import StringIO
+from mido import Message
+from mido import MidiFile
 from picotts import PicoTTS
 
 
@@ -24,7 +26,7 @@ def setup_TTS():
             input1 = inp
 
     return picotts, p, input1, outport
-    
+
 
 def  speak_for_me(msg, picotts, p):
 

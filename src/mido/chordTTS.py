@@ -4,11 +4,20 @@ import pyaudio
 import wave
 import  time
 import sys
-import StringIO
+import io
 from mido import Message
 from mido import MidiFile
 import mido
 from picotts import PicoTTS
+
+
+class NoMidiInputsException(Exception):
+    def __init__(self, message = "Couldn't find any MIDI inputs. Check you MIDI controller is connected.", errors = None ):            
+        # Call the base class constructor with the parameters it needs
+        super().__init__(message)
+            
+        # Now for your custom code...
+        self.errors = errors
 
 
 def setup_TTS():
@@ -18,11 +27,16 @@ def setup_TTS():
     p = pyaudio.PyAudio()
 
 
-    outport = mido.open_output()
+    #outport = mido.open_output()
+    outport = None
 
-
-    input1 = mido.get_input_names()[0]
-    for inp in mido.get_input_names():
+    input_names = mido.get_input_names()
+    if len(input_names) == 0:
+        raise NoMidiInputsException()
+    
+    input1 = input_names[0]
+    for inp in input_names:
+        # set a parameter for that!!
         if inp.find('Keystation')>-1:
             input1 = inp
 
@@ -33,7 +47,7 @@ def  speak_for_me(msg, picotts, p):
 
     
     wavs = picotts.synth_wav(msg)
-    wav = wave.open(StringIO.StringIO(wavs))
+    wav = wave.open(io.StringIO(wavs))
     #print wav.getnchannels(), wav.getframerate(), wav.getnframes()
     f = wav
     

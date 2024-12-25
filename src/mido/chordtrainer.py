@@ -1,8 +1,10 @@
-import mido
-from mido import Message
-from pprint import pprint
-import mingus.core.chords as chords
+import traceback
 import random
+from pprint import pprint
+
+from mido import Message
+import mingus.core.chords as chords
+
 
 from musicTheory import *
 from chordTTS import *
@@ -198,5 +200,8 @@ class ChordTrainer(MusicTheory):
         
         try:
             speak_for_me(schord, picotts,p)
-        except:
+        except Exception as err:
+            print(traceback.format_exc())
+            print(Exception, err)
+
             print("Error at teacher_say_chords!")

@@ -10,6 +10,8 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
 - [X] ~~Modify as a python package with poetry and build required environment~~
 - [X] ~~Update Mingus source package (python 3 based version)~~
 - [X] ~~review fluidsynth usage in MacOS: [](https://www.youtube.com/watch?v=O8ZzgaGNLn0)~~
+- [ ] Adapt TTS to each OS (pico tts for linux + install instructions, MACOS?, windows?, Android?)
+- [ ] use fluidsynth to play the notes from the computer
 - [ ] Finalize installation on MacOS: play, tts, midi controller receive, midi controller configure
 - [ ] ----
 - [ ] Separate concerns into modules

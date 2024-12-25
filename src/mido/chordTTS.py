@@ -1,5 +1,5 @@
 
-
+from os import system
 import pyaudio
 import wave
 import  time
@@ -27,8 +27,8 @@ def setup_TTS():
     p = pyaudio.PyAudio()
 
 
-    #outport = mido.open_output()
-    outport = None
+    outport = mido.open_output()
+    
 
     input_names = mido.get_input_names()
     if len(input_names) == 0:
@@ -44,11 +44,17 @@ def setup_TTS():
 
 
 def  speak_for_me(msg, picotts, p):
+    system(f"say {msg}")
+
+    # import subprocess
+    # subprocess.call(["say",msg])
+
+def speak_for_me_linux(msg, picotts, p): 
 
     
     wavs = picotts.synth_wav(msg)
     wav = wave.open(io.StringIO(wavs))
-    #print wav.getnchannels(), wav.getframerate(), wav.getnframes()
+    print( wav.getnchannels(), wav.getframerate(), wav.getnframes())
     f = wav
     
     

@@ -6,26 +6,38 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
 
 ## Refactor
 
-
+- [ ] --------------------------------------
 - [X] ~~Modify as a python package with poetry and build required environment~~
 - [X] ~~Update Mingus source package (python 3 based version)~~
-- [X] ~~review fluidsynth usage in MacOS: [](https://www.youtube.com/watch?v=O8ZzgaGNLn0)~~
-- [ ] Adapt TTS to each OS (pico tts for linux + install instructions, MACOS?, windows?, Android?)
-- [ ] use fluidsynth to play the notes from the computer
-- [ ] Finalize installation on MacOS: play, tts, midi controller receive, midi controller configure
-- [ ] ----
+- [ ] remove unused code
 - [ ] Separate concerns into modules
 - [ ] ---- 1. Mingus extension: is it needed or not? does the chords logic already exist within Mingus?
 - [ ] ---- 2. Midi controller connection & configuration
 - [ ] ---- 3. TTS engine wrapper
 - [ ] ---- 4. Piano Chord exercices: refactor, generalise to make extendable
 - [ ] ---- 5. Ear training exercices.
-- [ ] Clean unused code, keep the bare minimun needed code to work. Clean documentation also
-- [ ] Create a real python package, that is run as a CLI  and distribute on PyPi
-- [ ] Create a frontend for Linux, MacOS, Windows, Android, iOS, web (use a Python based frontend: reflex, kivy  ) Maybe on another repo?
+- [ ]
+- [ ]  Clean documentation also
+- [ ] --------------------------------------
+- [ ] --------------------------------------
+
+## Ear & chord training
 
 
-## Improvements
+- [ ] Review Mingus harmony engine
+- [ ] Abstract an exercice class
+- [ ] Training list:
+    * intervals
+    * single hand chords
+    * root and chord
+    * 2 hand same voicing
+    * 2 hand chord voicings
+    * 4rth voicings
+    * chord progression training
+    * sond chords training too (Jazz standards)
+    * Bass line training loops
+    * Backing tracks
+    * ear training exercies (interval, chord, progression)
 
 - [ ] Extend piano chord exercices by yaml confid files
 - [ ] Adapt piano book basic exercices: II-V-Is
@@ -43,14 +55,46 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
 
 - [ ] Rick beato ear training adaptation?
 
-## Interoperability
+## Midi and TTS engines
+- [X] ~~review fluidsynth usage in MacOS: [](https://www.youtube.com/watch?v=O8ZzgaGNLn0)~~
+- [ ] Adapt TTS to each OS (import platform; platform.system() )
+    * pico tts for linux + install instructions,
+    * MACOS? nothing, use say
+    * windows
+    * Android?) usd 
+- [ ] use fluidsynth to play the notes from the computer
+- [ ] Finalize installation on MacOS: play, tts, midi controller receive, midi controller configure
+- [ ] --------------------------------------
+- [ ] Midi connection scripts?
+- [ ] Midi controller buttons re assigning to specific tasks (like changin type of exercice or type of chords, or randomness)
 
+
+## Package
+- [ ] rename to wes?mmcoy?tyner?
+- [ ] option 1 installation as a hacky console menu tools
+- [ ] option 2 installation as a cli tool  
+- [ ] option 3 frontend with Kivy
+- [ ] distribute on PyPi
+- [ ] Create a frontend for Linux, MacOS, Windows, Android, iOS, web (use a Python based frontend: reflex, kivy  ) Maybe on another repo?
+
+
+
+## Installation tools
+- [ ] Check tts after installation
+- [ ] Check fludisynt after install
+- [ ] Check Sf2 after tinstall
+- [ ] Check yaml config file
+- [ ] --------------------------------------
+- [ ] --------------------------------------
 - [ ] Linux installation guide
 - [ ] MacOS compatibility 
 - [ ] Macos installation guide
 - [ ] Windows compatibility and installation guide
 
-# fluidsynth installation
+## Mega improvement
+- [ ] use librosa to leverage FFT to detect chords in sound input from mic
+
+# Installation instructions
 
 ## Installing on Linux
 

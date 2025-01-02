@@ -9,14 +9,13 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
 - [ ] --------------------------------------
 - [X] ~~Modify as a python package with poetry and build required environment~~
 - [X] ~~Update Mingus source package (python 3 based version)~~
-- [ ] remove unused code
+- [X] ~~remove unused code~~
 - [ ] Separate concerns into modules
 - [ ] ---- 1. Mingus extension: is it needed or not? does the chords logic already exist within Mingus?
 - [ ] ---- 2. Midi controller connection & configuration
 - [ ] ---- 3. TTS engine wrapper
 - [ ] ---- 4. Piano Chord exercices: refactor, generalise to make extendable
 - [ ] ---- 5. Ear training exercices.
-- [ ]
 - [ ]  Clean documentation also
 - [ ] --------------------------------------
 - [ ] --------------------------------------
@@ -24,8 +23,9 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
 ## Ear & chord training
 
 
+- [ ] 2) Abstract an exercice class + yaml file for each exercice
 - [ ] Review Mingus harmony engine
-- [ ] Abstract an exercice class
+
 - [ ] Training list:
     * intervals
     * single hand chords
@@ -57,12 +57,12 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
 
 ## Midi and TTS engines
 - [X] ~~review fluidsynth usage in MacOS: [](https://www.youtube.com/watch?v=O8ZzgaGNLn0)~~
+- [X] ~~1) use fluidsynth to play the notes from the computer: octave? + volume?~~
 - [ ] Adapt TTS to each OS (import platform; platform.system() )
     * pico tts for linux + install instructions,
     * MACOS? nothing, use say
     * windows
     * Android?) usd 
-- [ ] use fluidsynth to play the notes from the computer
 - [ ] Finalize installation on MacOS: play, tts, midi controller receive, midi controller configure
 - [ ] --------------------------------------
 - [ ] Midi connection scripts?
@@ -71,8 +71,9 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
 
 ## Package
 - [ ] rename to wes?mmcoy?tyner?
-- [ ] option 1 installation as a hacky console menu tools
-- [ ] option 2 installation as a cli tool  
+- [ ] 3) option 2 installation as a cli tool  with a single exercice
+- [ ] option 1 installation as a cli that opens a hacky console menu tools
+
 - [ ] option 3 frontend with Kivy
 - [ ] distribute on PyPi
 - [ ] Create a frontend for Linux, MacOS, Windows, Android, iOS, web (use a Python based frontend: reflex, kivy  ) Maybe on another repo?
@@ -164,5 +165,86 @@ Select a sound to play on the given channel (a number from 0 to 15), using the g
 Load a soundfont into memory, returning an ID that references it.
 .start([device = name] [driver = name])
 Start the synthesizer. On Linux, I recommend passing device = 'hw:0'. On Windows, I recommend passing driver = 'dsound'.
+
+
+# Code schema and responsibilities
+
+## Current organization
+
+- -- miditrainer.py (
+        - init
+        - mian exercice loop (-> chordtrainer.py)
+- -- chordtrainer.py
+        - contains chord definitions
+        - exercice loop functions (ask question, read answer, evaluate, choose_random_chord)
+        - contains chord maniupltion: find_Note_position, match_chord, ... -> like Music Theory
+- -- chordTTS
+        - setup TTS
+        - setup midi input & output (mido)
+        - setup pyAudio (not used!)
+- -- GPIOcontrol
+        - exercice loop functions to control from midif controller
+
+
+## Responsibilities
+
+ok- chordTTS::TTS functions
+    ok- setup TTS
+    ok- setup pyAudio (it is used! maintain)
+
+ok- MidiInput:input control
+    ok- setup midi input & output (mido)
+    ok- read midi input and return note, octave and status
+    ok - decide what to do in the exercice loop
+    - run a generator over an input
+
+ok- midiPlayer.py::Playing pressed notes
+    ok- call play/update from exercice loop
+
+ok- musicTheory::Chord & interval definitions
+    ok- understand input -> match chord
+
+ok- miditrainer::Main Exercice loop
+    ok- INIT setup all components (chordtrainer + tts + gpio)
+    ok- LOAD EXERCICE PENDING
+    ok- EXERCICE LOOP
+        - read next question
+        - TTS to ask question + print on the screen
+        - read input
+        - call musicTheory funcs to understand and match answer and evaluate
+        - read GPIO
+
+
+- musicExercice::Loading exercices PENDING
+    - read yaml exercice definition
+    - create basic exercice class (part from chordtrainer)
+        - select next questions (random or in order or...)
+            - teacher_ask_new_question()
+            - choose_random_chord()
+            - parse_chord()
+        - update answer
+            - update_answer()
+        - evaluate
+            - evaluate()
+            - match_chord()
+            - find_note_position()
+            - find_real_notes()
+
+
+- chordtrainer::Chord Understanding: 
+   ok - evaluate answer to question
+   - Move functionality to
+    - Chord parser class
+    - Midi Exercice Class
+   
+
+
+
+
+
+
+- GPIOcontrol::GPIO functions
+
+    
 
 

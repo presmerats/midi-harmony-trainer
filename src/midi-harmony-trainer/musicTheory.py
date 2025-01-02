@@ -35,15 +35,16 @@ class MusicTheory(object):
 
 
     chord_types = {
-    # 'major': [4,3],
-    # 'minor': [3,4],
+    'major': [4,3],
+    'minor': [3,4],
     'M7': [4,3,4],
-    # '7':[4,3,3],
-    # '-7':[3,4,3],
-    # '7b5':[3,3,4],
-    # 'dim7':[3,3,3]
+    '7':[4,3,3],
+    '-7':[3,4,3],
+    '7b5':[3,3,4],
+    'dim7':[3,3,3]
     }
 
-    def __init__(self):
-        self.notes = { i:self.note[i%12]  for i in range(128) }
+    
 
+    def __init__(self):
+        pass

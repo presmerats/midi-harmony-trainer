@@ -2,49 +2,40 @@ import traceback
 import random
 from pprint import pprint
 
-from mido import Message
+from mingus.containers import NoteContainer, Note
+from mingus.midi import fluidsynth
 import mingus.core.chords as chords
 
 
-from musicTheory import *
-from chordTTS import *
+from musicTheory import MusicTheory
+
 
 
 class ChordTrainer(MusicTheory):
 
     thechord, chord_name, parsed_chord = None, None, None 
-    picotts, p = None, None 
+    
 
-    def __init__(self, picotts, p):
+    def __init__(self, ):
         super(ChordTrainer, self).__init__()
-        self.picotts = picotts
-        self.p = p 
-        #self.inport = inport 
         self.pressed_notes = []
 
 
     def teacher_ask_new_question(self,):
         self.thechord = self.choose_random_chord()
         self.chord_name, self.parsed_chord = self.parse_chord(self.thechord)
-        print(self.chord_name)
-        self.teacher_say_chords(self.chord_name, self.picotts, self.p)
+        return self.chord_name
             
 
 
-    def read_answer(self, msg):
-        if 'note' not in dir(msg):
-            return
+    def update_answer(self, global_note, note, octave, play_status):
+        #print(note, octave, play_status)
             
-        if msg.is_meta:
-            return
-
-
-        current_note = self.notes[msg.note]
-        if msg.velocity > 0 :
-            self.pressed_notes.append((msg.note,current_note))
+        if play_status :
+            self.pressed_notes.append((global_note,note))
         else:
             try:
-                foundi = self.pressed_notes.index((msg.note,current_note))
+                foundi = self.pressed_notes.index((global_note,note))
                 if foundi > -1:
                     self.pressed_notes.pop(foundi)
             except:
@@ -54,14 +45,10 @@ class ChordTrainer(MusicTheory):
             
 
     def evaluate(self,):
-        if self.match_chord(self.pressed_notes, self.thechord):
-            print("Correct!", self.parsed_chord )
-            self.teacher_say("Correct chord!", self.picotts, self.p)
-            #self.green_light_GPIO()
+        if self.match_chord(self.pressed_notes, self.thechord):            
             return True 
 
-        #self.red_light_GPIO()
-        return False 
+        return False
 
 
 
@@ -156,12 +143,12 @@ class ChordTrainer(MusicTheory):
         # convert to real chord
         thechord2 = [ thechord[i] if i>0 else self.find_real_note(thechord[i]) for i in range(len(thechord)) ]
 
-        #print("real chord", thechord2)
+        print("real chord", thechord2)
 
         # sort the pressed notes by note value ascending
         pressed_notes.sort(key=lambda x: x[0])
         pressed_notes2 = [t[1] for t in pressed_notes]
-        #print("presset notes", pressed_notes2)
+        print("presset notes", pressed_notes2)
 
         match = True
         for i in range(len(thechord2)):
@@ -174,34 +161,4 @@ class ChordTrainer(MusicTheory):
 
         return match
 
-        
-    def teacher_say(self, msg, picotts, p):
-        if isinstance(msg, str):
-            speak_for_me(msg,picotts,p)
-        elif isinstance(msg, list):
-            speak_for_me(msg[0], picotts,p)
     
-        # try:
-        #     if isinstance(msg, str):
-        #         speak_for_me(msg,picotts,p)
-        #     elif isinstance(msg, list):
-        #         speak_for_me(msg[0], picotts,p)
-        # except:
-        #     print("Error at teacher_say!")
-
-    def teacher_say_chords(self, chord_list, picotts, p):
-
-        schord = chord_list[0]
-
-        schord = schord.replace('bb',' double flat ')
-        schord = schord.replace('b',' flat ')
-        schord = schord.replace('##',' double sharp ')
-        schord = schord.replace('#',' sharp ')
-        
-        try:
-            speak_for_me(schord, picotts,p)
-        except Exception as err:
-            print(traceback.format_exc())
-            print(Exception, err)
-
-            print("Error at teacher_say_chords!")

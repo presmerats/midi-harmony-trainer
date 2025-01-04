@@ -12,6 +12,7 @@ repos:
     rev: v1.8.0
     hooks:
       - id: mypy
+        additional_dependencies: [types-pyyaml]
         exclude: ^(docs/|example-plugin/)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.5

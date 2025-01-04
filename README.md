@@ -214,6 +214,29 @@ ok- miditrainer::Main Exercice loop
         - call musicTheory funcs to understand and match answer and evaluate
         - read GPIO
 
+- monk.py
+    - (ex miditrainer.py)
+    - general workflow controller
+    ok- for the moment:
+        ok- arguments -> exercice.yaml file
+        ko- generate all external components? -> move into exercice?(depends on install config..)
+        - instanciate new exercice class with selected exercice
+    - later:
+        - list all available exercices
+        - interrupt current exercice and go back to the menu
+        - console menus...
+
+
+
+- exercice.py
+    - (ex chordtrainer.py)
+    ok- read exercice yaml def
+    ok- save all given external components (tts, pyaudio, ...)
+    - prepare exercice loop
+        - loop itself and calling other parts
+        - list of items unroll/sequential/...
+        - evaluation
+    - interrupt exercice
 
 - musicExercice::Loading exercices PENDING
     ok- read yaml exercice definition

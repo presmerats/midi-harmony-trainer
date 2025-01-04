@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import time
+
 import fluidsynth
 
 fs = fluidsynth.Synth()
-#fs.start(driver='coreaudio')
-fs.start(device = 'hw:0',driver='coreaudio')  
+# fs.start(driver='coreaudio')
+fs.start(device='hw:0', driver='coreaudio')
 # on Windows, use "driver = 'dsound'"
 
 sfid = fs.sfload('./external/FluidR3_GM.sf2')  # replace path as needed

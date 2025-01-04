@@ -62,7 +62,7 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
     * pico tts for linux + install instructions,
     * MACOS? nothing, use say
     * windows
-    * Android?) usd 
+    * Android?) usd
 - [ ] Finalize installation on MacOS: play, tts, midi controller receive, midi controller configure
 - [ ] --------------------------------------
 - [ ] Midi connection scripts?
@@ -88,7 +88,7 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
 - [ ] --------------------------------------
 - [ ] --------------------------------------
 - [ ] Linux installation guide
-- [ ] MacOS compatibility 
+- [ ] MacOS compatibility
 - [ ] Macos installation guide
 - [ ] Windows compatibility and installation guide
 
@@ -103,7 +103,7 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
 $ sudo apt install libfluidsynth3
 ```
 
-download FluidR3_GM.sf2 
+download FluidR3_GM.sf2
 ```
 $ sudo apt install fluid-soundfont-gm
 ```
@@ -149,7 +149,7 @@ pip install pyfluidsynth
 **pyfluidsynth API**
 Here are a few useful classes and methods. For more information, sees the pyfluidsynth GitHub page.
 
-**fluidsynth.Synth class** 
+**fluidsynth.Synth class**
 
 A Synth is an instance of the FluidSynth synthesizer.
 
@@ -216,8 +216,55 @@ ok- miditrainer::Main Exercice loop
 
 
 - musicExercice::Loading exercices PENDING
-    - read yaml exercice definition
+    ok- read yaml exercice definition
+        - name
+        - type: interval, chords, voicings, progressions, comping, piano bass, songs, improvisation
+        - item_selector: random, sequential, sequential_loop, random_loop
+        - items_category: (depends on type)
+            - type=interval: 2m,2,3m,3,4,4a,5dim,5,6m,6,7m,7,9b,9,11,11#,13b,13, ANY, Any-Major
+            - type=chord: 3Maj,3min,Maj7,Dom7,Minor7,half-dim, dim, sus4, sus2,..... ANY, or a Subset
+            - type=voicing: (like chord)
+            - type=progressions: 2-5-1, 6-4-5-1?, 2-1-5-4,
+        - items_category2 (for voicings, tells the type of voicing)
+        - item_list: for songs, a list of chords and/or voicings
+        - question_print: say|console|GUI
+        - answer: play|say|console|GUI
+        - evaluation: nothing|say|console|GUI
+
     - create basic exercice class (part from chordtrainer)
+        - instanciate exercice class
+            - add tts, midi_input, midi_player
+            - load yml file -> to dict -> to class attributes
+        - pick the correct functions for
+            - next item (random, sequence, loop or not)
+            - next item print: teacher say? print? GUI?
+            - -------
+            - read answer
+                - read chords
+                - read intervals
+                - read voicings
+                - read progressions
+                - read lh basses
+            - play answer?
+                - separate play from answer reading?
+                    - what is pressed is sent to play
+                    - what is pressed is later sent to answer update
+                    - depending on type of item, collect note, generic chord, detailed chord voicing,
+            - -------
+            - evaluate answer
+                - chord match
+                - chord voicing match
+                - interval match
+                - progression match
+            - teacher say or just continue?
+            -----
+            - play background rythm and bass? (2 threads?)
+
+        - exercice loop implement inside the exercice class
+        - Exit keys inside loop
+        - Main class miditrainer: only loads exercice class, handles console menu
+
+
         - select next questions (random or in order or...)
             - teacher_ask_new_question()
             - choose_random_chord()
@@ -231,12 +278,26 @@ ok- miditrainer::Main Exercice loop
             - find_real_notes()
 
 
-- chordtrainer::Chord Understanding: 
+    - implement yml + exercie class
+        - seventh chords (random and circle of fifths)
+        - intervals (selected interval or any, random or circle of fifths)
+        - II-V-I progressions
+        - song: Misty
+        - triads
+        - suspended chords
+        - voicings: shell chords
+        - comping? (midi player with rythm and bass)
+        - piano bass? (Midi player with rythm)
+        - improvisation? (midi player with rythm and bass)
+
+
+
+- chordtrainer::Chord Understanding:
    ok - evaluate answer to question
    - Move functionality to
-    - Chord parser class
+    - Chord parser class (musicTheory? )
     - Midi Exercice Class
-   
+
 
 
 
@@ -244,7 +305,3 @@ ok- miditrainer::Main Exercice loop
 
 
 - GPIOcontrol::GPIO functions
-
-    
-
-

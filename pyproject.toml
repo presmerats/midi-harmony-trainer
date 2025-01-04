@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "midi-harmony-trainer"
+name = "thelonious"
 version = "0.1.0"
 description = "CLI tool that offers a set of exercices for practicing piano voicings for chords, chord prerages MIDI controller for reading the answer to the exercices and fluidsynth for playing sounds and backing tracks."
 authors = ["Pau R. Esmerats <presmerats@gmail.com>"]
@@ -16,6 +16,31 @@ pyaudio = "^0.2.14"
 python-rtmidi = "^1.5.8"
 
 
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+flake8 = "^7.1.1"
+mypy = "^1.14.1"
+pre-commit = "^4.0.1"
+ruff = "^0.8.6"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.ruff]
+line-length = 88
+select = [
+    "F",  # pyflakes rules
+    "E",  # pycodestyle error rules
+    "W",  # pycodestyle warning rules
+    "B",  # flake8-bugbear rules
+    "I",  # isort rules
+]
+ignore = [
+    "E501",  # line-too-long
+]
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "single"

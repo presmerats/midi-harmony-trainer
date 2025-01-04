@@ -1,0 +1,49 @@
+---
+
+exercice_name: "seventh chords"
+
+exercice_type: chord
+
+item_selector:
+  - random_loop
+  - sequence_lopp
+
+items_category:
+  - M7
+  - '7'
+  - '-7'
+  - 7b5
+  - dim7
+
+items_category2:
+
+items_list:
+  - C
+  - F
+  - Bb
+  - Eb
+  - Ab
+  - Db
+  - Gb
+  - Cb
+  - Fb
+  - A
+  - D
+  - G
+
+question:
+  - say
+  - console
+  #- GUI
+
+answer:
+  - play
+  #- say
+  #- console
+  #- GUI
+
+evaluation:
+  #- nothing
+  - say
+  - console
+  #- GUI

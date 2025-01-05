@@ -28,10 +28,51 @@ class MusicExercice(MusicTheory):
         # ini midi player engine
         self.midi_player = MyMidiPlayer()
 
-        with open(yaml_definition, 'r') as file:
-            self.config = yaml.safe_load(file)
+        self.process_exercice_definition(yaml_definition)
 
         self.pressed_notes = []
+
+        print(self.config)
+
+    def my_root_note_generator(self, sequence=None):
+        if sequence is None:
+            while True:
+                yield self.root_notes[
+                    random.randint(0, len(self.root_notes) - 1)
+                ]
+
+        else:
+            n = 0
+            while True:  # n < len(sequence):
+                yield sequence[n % len(sequence)]
+                n += 1
+
+    def process_exercice_definition(self, yaml_definition):
+        with open(yaml_definition, "r") as file:
+            self.config = yaml.safe_load(file)
+
+            # save the exercice type
+            self.exercice_type = self.config["exercice_type"]
+
+            # save the categoy
+            self.exercice_items_categories = self.config["items_category"]
+            # check items_categories are all correct first
+            valid_categories = []
+            for chord_type in self.exercice_items_categories:
+                if chord_type in list(self.chord_types.keys()):
+                    valid_categories.append(chord_type)
+            self.exercice_items_categories = valid_categories
+
+            # save the sub-category
+            self.exercice_items_subcategories = self.config["items_category2"]
+
+            # save the unrolled list of items
+            if self.config["item_selector"] == "sequence":
+                self.exercice_items = self.my_root_note_generator(
+                    self.config["sequence"]
+                )
+            elif self.config["item_selector"] == "random_loop":
+                self.exercice_items = self.my_root_note_generator()
 
     def exercice_loop(
         self,
@@ -39,7 +80,7 @@ class MusicExercice(MusicTheory):
         while True:
             # new Question
             question = self.teacher_ask_new_question()
-            print(question)
+            print(question[0])
             self.tts.teacher_say_chords(question)
 
             for msg in self.midi_input_msgs:
@@ -62,8 +103,8 @@ class MusicExercice(MusicTheory):
 
                 # evaluate exercice answer
                 if self.evaluate():
-                    print('Correct!', self.parsed_chord)
-                    self.tts.teacher_say('Correct chord!')
+                    print("Correct!", self.parsed_chord)
+                    self.tts.teacher_say("Correct chord!")
                     # GPIOcontrol.green_light_GPIO()
                     break
 
@@ -73,7 +114,7 @@ class MusicExercice(MusicTheory):
     def teacher_ask_new_question(
         self,
     ):
-        self.thechord = self.choose_random_chord()
+        self.thechord = self.choose_next_chord()
         self.chord_name, self.parsed_chord = self.parse_chord(self.thechord)
         return self.chord_name
 
@@ -97,6 +138,20 @@ class MusicExercice(MusicTheory):
             return True
 
         return False
+
+    def choose_next_chord(
+        self,
+    ):
+        # get next root
+        root = next(self.exercice_items)
+
+        # get next random chord type
+        chord_types_keys = list(self.exercice_items_categories)
+        chord_type = self.chord_types[
+            chord_types_keys[random.randint(0, len(chord_types_keys) - 1)]
+        ]
+
+        return self.build_chord_from_root_and_type(root, chord_type)
 
     def choose_random_chord(
         self,

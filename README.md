@@ -229,12 +229,29 @@ ok- miditrainer::Main Exercice loop
 
 
 - exercice.py
-    - (ex chordtrainer.py)
+    ok- (ex chordtrainer.py)
     ok- read exercice yaml def
     ok- save all given external components (tts, pyaudio, ...)
     - prepare exercice loop
-        - loop itself and calling other parts
-        - list of items unroll/sequential/...
+       ok - loop itself and calling other parts
+       - load exercice yaml file
+            - list of items unroll/sequential/...
+                - chord types,
+                - tonalities or roots,..
+                    - random all
+                    - chormatic
+                    - circel of fifths1, circle of fifths2
+                    - ? by tones
+                    - by seconds
+                    - by fourths
+                    - by thirds
+                    - by fifths
+                    - by sixths
+            - next question function
+                - use the previous chord types and items
+                - use the pare chord too (from Mingus)
+
+            - question, answer, evaluation behavior
         - evaluation
     - interrupt exercice
 

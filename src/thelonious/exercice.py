@@ -7,6 +7,7 @@ import mingus.core.chords as chords
 import yaml
 from chordTTS import MyTTS
 from midiPlayer import MyMidiPlayer
+from mingus.core.intervals import from_shorthand
 from musicTheory import MusicTheory
 
 
@@ -73,6 +74,71 @@ class MusicExercice(MusicTheory):
                 )
             elif self.config["item_selector"] == "random_loop":
                 self.exercice_items = self.my_root_note_generator()
+
+            elif self.is_interval(self.config["item_selector"]):
+                generated_sequence = self.generate_interval_sequence(
+                    self.config["item_selector"],
+                    up=self.config["item_selector_direction_up"],
+                )
+                print(generated_sequence)
+                self.exercice_items = self.my_root_note_generator(
+                    generated_sequence
+                )
+
+    def is_interval(self, interval_name):
+        if interval_name in list(self.interval_names.keys()):
+            return True
+        return False
+
+    def generate_interval(self, note, interval_name, up=True):
+        next_root = from_shorthand(note, interval_name, up=up)
+        # print(next_root,end=" ")
+        if next_root not in self.root_notes:
+            for note_names in self.note:
+                if next_root in note_names:
+                    next_root = note_names[0]
+                    # print("found",next_root)
+                    break
+        return next_root
+
+    def note_equals(self, note1, note2):
+        found_note1 = None
+        found_note2 = None
+        for i, notes in enumerate(self.note):
+            # print(note1, notes, note1 in notes)
+            # print(note2, notes, note2 in notes)
+            # print()
+            if note1 in notes:
+                found_note1 = i
+
+            if note2 in notes:
+                found_note2 = i
+
+        # print("note_equals",note1, note2, found_note1 == found_note2)
+        return found_note1 == found_note2
+
+    def generate_interval_sequence(self, interval_name, up=True):
+        sequence = []
+        start_root = "C"
+        sequence.append(start_root)
+        interval_name = self.interval_names[interval_name]
+
+        next_root = self.generate_interval(sequence[-1], interval_name, up=up)
+        count = 1
+        # or not self.note_equals(next_root,start_root)
+        while count < 36:
+            if self.note_equals(next_root, start_root):
+                next_root = self.generate_interval(next_root, "2", up=up)
+                start_root = next_root
+
+            sequence.append(next_root)
+            next_root = self.generate_interval(
+                sequence[-1], interval_name, up=up
+            )
+
+            count += 1
+
+        return sequence
 
     def exercice_loop(
         self,

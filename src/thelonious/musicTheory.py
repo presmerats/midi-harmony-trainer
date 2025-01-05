@@ -22,7 +22,7 @@ class MusicTheory(object):
         "G#",
         "Ab",
         "A",
-        "Bbb",
+        # "Bbb",
         "A#",
         "Bb",
         "B",
@@ -33,14 +33,18 @@ class MusicTheory(object):
         ("C", "B#", "Dbb"),
         ("C#", "B##", "Db"),
         ("D", "C##", "Ebb"),
-        ("D#", "Eb"),
+        ("D#", "Eb", "Fbb"),
         ("E", "D##", "Fb"),
         ("F", "E#", "Gbb"),
         ("F#", "E##", "Gb"),
         ("G", "F##", "Abb"),
-        ("G#", "Ab"),
+        (
+            "G#",
+            "Ab",
+            "Bbbb",
+        ),
         ("A", "G##", "Bbb"),
-        ("A#", "Bb"),
+        ("A#", "Bb", "Cbb"),
         ("B", "A##", "Cb"),
     ]
 
@@ -54,6 +58,26 @@ class MusicTheory(object):
         "-7": [3, 4, 3],
         "7b5": [3, 3, 4],
         "dim7": [3, 3, 3],
+    }
+
+    interval_names = {
+        "chromatic": "b2",
+        "tone": "2",
+        "minor_third": "b3",
+        "major_third": "3",
+        "thirds": "3",
+        "perfect_fourth": "4",
+        "fourths": "4",
+        "augmented_fourth": "#4",
+        "minor_fifth": "b5",
+        "fifths": "5",
+        "perfect_fifth": "5",
+        "major_sixth": "b6",
+        "sixths": "6",
+        "minor_sixth": "6",
+        "minor_seventh": "b7",
+        "major_seventh": "7",
+        "sevenths": "7",
     }
 
     def __init__(self):

@@ -23,9 +23,7 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
 ## Ear & chord training
 
 
-- [ ] 2) Abstract an exercice class + yaml file for each exercice
-- [ ] Review Mingus harmony engine
-
+- [X] ~~2) Abstract an exercice class + yaml file for each exercice~~
 - [ ] Training list:
     * intervals
     * single hand chords
@@ -39,15 +37,18 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
     * Backing tracks
     * ear training exercies (interval, chord, progression)
 
-- [ ] Extend piano chord exercices by yaml confid files
+- [X] ~~Extend piano chord exercices by yaml confid files~~
+- [X] ~~Adapt piano book basic exercices: 7b5~~
+- [X] ~~Adapt piano book basic exercices: dim7~~
 - [ ] Adapt piano book basic exercices: II-V-Is
-- [ ] Adapt piano book basic exercices: 7b5
-- [ ] Adapt piano book basic exercices: dim7
-
+- [ ] Song chords learning
 - [ ] Advanced Piano voicings: bass note + right hand
-- [ ] Advanced Piano voicings: 2 hand voicings
+
+- [ ] Advanced Piano voicings: 2 hand voicings (piano book)
 - [ ] Advanced Piano voicings: 2 hand voicings + 9th-11th-13th
 - [ ] Advanced Piano voicings: 4rth voicings
+
+- [ ] Review Mingus harmony engine
 
 - [ ] Piano comping: bass comping + right ritmic chord
 - [ ] Piano comping: bass comping + right ritmic chord + right hand melody
@@ -236,24 +237,26 @@ ok- miditrainer::Main Exercice loop
        ok - loop itself and calling other parts
        - load exercice yaml file
             - list of items unroll/sequential/...
-                - chord types,
+                ok- chord types,
                 - tonalities or roots,..
-                    - random all
-                    - chormatic
+                    ok- random all
+                    ok- sequence
+                    - chromatic
                     - circel of fifths1, circle of fifths2
-                    - ? by tones
                     - by seconds
                     - by fourths
                     - by thirds
                     - by fifths
                     - by sixths
             - next question function
-                - use the previous chord types and items
-                - use the pare chord too (from Mingus)
-
+                ok- use the previous chord types and items
+                - use the parse chord too (from Mingus)
             - question, answer, evaluation behavior
         - evaluation
     - interrupt exercice
+    - basic chord exercices yml files
+    - basic interval exercices yml files
+    - basic progression exercice (2-5-1)
 
 - musicExercice::Loading exercices PENDING
     ok- read yaml exercice definition

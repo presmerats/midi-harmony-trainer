@@ -7,29 +7,20 @@ exercice_type: chord
 
 
 items_category:
-  - M7
+  # - M7
   # - '7'
   # - '-7'
-  # - 7b5
-  # - dim7
+  #- 7b5
+  - dim7
 
 items_category2:
 
-item_selector: minor_third
+item_selector: sequence
 # random_loop
-# sequence: predefined sequence (see sequence)
-# by intervals:
-#    chromatic, 2b
-#    tones, 2
-#    thirds, 3
-#    minor thirds, 3b
-
-#    3 4 semitones (by thirds), minor thirds 3 semitones
-#    ...
-#     circle_of_fifths, circle_of_fifths2,
-#     by fourths, by fifths, by sixths
-
-item_selector_direction_up: true
+# sequence: predefined sequence
+# chormatic, by tones
+# circle_of_fifths, circle_of_fifths2,
+# by seconds, by thirds, by fourths, by fifths, by sixths
 
 
 sequence:

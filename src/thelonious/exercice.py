@@ -59,9 +59,11 @@ class MusicExercice(MusicTheory):
             self.exercice_items_categories = self.config["items_category"]
             # check items_categories are all correct first
             valid_categories = []
-            for chord_type in self.exercice_items_categories:
-                if chord_type in list(self.chord_types.keys()):
-                    valid_categories.append(chord_type)
+            for element_type in self.exercice_items_categories:
+                if element_type in list(self.chord_types.keys()):
+                    valid_categories.append(element_type)
+                elif element_type in list(self.interval_types.keys()):
+                    valid_categories.append(element_type)
             self.exercice_items_categories = valid_categories
 
             # save the sub-category
@@ -84,6 +86,8 @@ class MusicExercice(MusicTheory):
                 self.exercice_items = self.my_root_note_generator(
                     generated_sequence
                 )
+            else:
+                self.exercice_items = self.my_root_note_generator()
 
     def is_interval(self, interval_name):
         if interval_name in list(self.interval_names.keys()):
@@ -180,9 +184,28 @@ class MusicExercice(MusicTheory):
     def teacher_ask_new_question(
         self,
     ):
-        self.thechord = self.choose_next_chord()
-        self.chord_name, self.parsed_chord = self.parse_chord(self.thechord)
-        return self.chord_name
+        if self.exercice_type == "chord":
+            self.thechord = self.choose_next_chord()
+
+            self.the_answer = self.thechord
+
+            self.chord_name, self.parsed_chord = self.parse_chord(
+                self.thechord
+            )
+            return self.chord_name
+
+        elif self.exercice_type == "interval":
+            self.the_interval, interval_name = self.choose_next_interval()
+
+            print("the interval", self.the_interval, interval_name)
+
+            start_note, end_note = self.parse_interval(self.the_interval)
+
+            self.the_answer = [end_note]
+
+            print("interval is", start_note, end_note)
+
+            return [f"{interval_name[0]} from {start_note} "]
 
     def update_answer(self, global_note, note, octave, play_status):
         # print(note, octave, play_status)
@@ -200,7 +223,7 @@ class MusicExercice(MusicTheory):
     def evaluate(
         self,
     ):
-        if self.match_chord(self.pressed_notes, self.thechord):
+        if self.match_chord(self.pressed_notes, self.the_answer):
             return True
 
         return False
@@ -218,6 +241,21 @@ class MusicExercice(MusicTheory):
         ]
 
         return self.build_chord_from_root_and_type(root, chord_type)
+
+    def choose_next_interval(self):
+        root = next(self.exercice_items)
+
+        # get next random chord type
+        item_types_keys = list(self.exercice_items_categories)
+
+        interval = self.interval_types[
+            item_types_keys[random.randint(0, len(item_types_keys) - 1)]
+        ]
+
+        print(self.interval_types)
+        print(interval)
+
+        return self.build_interval(root, interval), item_types_keys
 
     def choose_random_chord(
         self,
@@ -286,6 +324,13 @@ class MusicExercice(MusicTheory):
 
         return chords.determine(parsed_chord), parsed_chord
 
+    def parse_interval(self, interval):
+        # from root + following note -> recover inteval name?
+        # return the root, the interval name, the second note result
+        assert len(interval) == 2
+
+        return interval[0], interval[1]
+
     def find_real_note(self, note_name):
         for n in self.note:
             for synonime in n:
@@ -303,16 +348,17 @@ class MusicExercice(MusicTheory):
     def match_chord(self, pressed_notes, thechord):
         # convert to real chord
         thechord2 = [
-            thechord[i] if i > 0 else self.find_real_note(thechord[i])
+            # thechord[i] if i > 0 else self.find_real_note(thechord[i])
+            self.find_real_note(thechord[i])
             for i in range(len(thechord))
         ]
 
-        # print('real chord', thechord2)
+        print("real chord", thechord2)
 
         # sort the pressed notes by note value ascending
         pressed_notes.sort(key=lambda x: x[0])
         pressed_notes2 = [t[1] for t in pressed_notes]
-        # print('presset notes', pressed_notes2)
+        print("presset notes", pressed_notes2)
 
         match = True
         for i in range(len(thechord2)):

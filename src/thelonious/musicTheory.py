@@ -60,6 +60,26 @@ class MusicTheory(object):
         "dim7": [3, 3, 3],
     }
 
+    interval_types = {
+        "chromatic": [1],
+        "tone": [2],
+        "minor_third": [3],
+        "major_third": [4],
+        "thirds": [4],
+        "perfect_fourth": [5],
+        "fourths": [5],
+        "augmented_fourth": [6],
+        "minor_fifth": [6],
+        "fifths": [7],
+        "perfect_fifth": [7],
+        "major_sixth": [9],
+        "sixths": [9],
+        "minor_sixth": [8],
+        "minor_seventh": [10],
+        "major_seventh": [11],
+        "sevenths": [11],
+    }
+
     interval_names = {
         "chromatic": "b2",
         "tone": "2",
@@ -82,6 +102,26 @@ class MusicTheory(object):
 
     def __init__(self):
         pass
+
+    def build_interval(self, root, intervals):
+        final_chord = [root]
+
+        posi = self.find_note_position(root)
+
+        for interval in intervals:
+            #
+            print("posi", posi, interval)
+            posi = (posi + interval) % len(self.note)
+            print("->", posi)
+
+            # update curernt note
+            current_note = self.note[posi][0]
+
+            final_chord.append(current_note)
+
+        print("return from build_interval", final_chord)
+
+        return final_chord
 
     def build_chord_from_root_and_type(self, root, chord_type):
         final_chord = [

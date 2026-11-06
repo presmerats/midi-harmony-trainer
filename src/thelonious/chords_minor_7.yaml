@@ -1,0 +1,67 @@
+---
+
+exercice_name: "seventh chords"
+
+exercice_type: chord
+
+
+
+items_category:
+  # - M7
+  # - '7'
+  - '-7'
+  #- 7b5
+  # - dim7
+
+items_category2:
+
+item_selector: sequence
+# random_loop
+# sequence: predefined sequence
+# chormatic, by tones
+# circle_of_fifths, circle_of_fifths2,
+# by seconds, by thirds, by fourths, by fifths, by sixths
+
+
+sequence:
+  - C
+  - F
+  - Bb
+  - Eb
+  - Ab
+  - Db
+  - Gb
+  - Cb
+  - Fb
+  - A
+  - D
+  - G
+  - C
+  - E#
+  - A#
+  - D#
+  - G#
+  - C#
+  - F#
+  - B
+  - E
+  - A
+  - D
+  - G
+
+question:
+  - say
+  - console
+  #- GUI
+
+answer:
+  - play
+  #- say
+  #- console
+  #- GUI
+
+evaluation:
+  #- nothing
+  - say
+  - console
+  #- GUI

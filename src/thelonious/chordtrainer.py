@@ -38,7 +38,7 @@ class ChordTrainer(MusicTheory):
     def evaluate(
         self,
     ):
-        if self.match_chord(self.pressed_notes, self.thechord):
+        if self.match_chord(self.pressed_notes, self.the_answer):
             return True
 
         return False
@@ -131,12 +131,12 @@ class ChordTrainer(MusicTheory):
             for i in range(len(thechord))
         ]
 
-        print('real chord', thechord2)
+        print("real chord", thechord2)
 
         # sort the pressed notes by note value ascending
         pressed_notes.sort(key=lambda x: x[0])
         pressed_notes2 = [t[1] for t in pressed_notes]
-        print('presset notes', pressed_notes2)
+        print("presset notes", pressed_notes2)
 
         match = True
         for i in range(len(thechord2)):

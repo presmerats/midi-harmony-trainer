@@ -1,0 +1,77 @@
+---
+
+exercice_name: "seventh chords"
+
+exercice_type: interval
+
+
+
+items_category:
+  - 'perfect_fourth'
+  - 'fourths'
+  # - '7'
+  # - '-7'
+  # - 7b5
+  # - dim7
+
+items_category2:
+
+item_selector:  random_loop
+# random_loop
+# sequence: predefined sequence (see sequence)
+# by intervals:
+#    chromatic, 2b
+#    tones, 2
+#    thirds, 3
+#    minor thirds, 3b
+
+#    3 4 semitones (by thirds), minor thirds 3 semitones
+#    ...
+#     circle_of_fifths, circle_of_fifths2,
+#     by fourths, by fifths, by sixths
+
+item_selector_direction_up: true
+
+
+sequence:
+  - C
+  - F
+  - Bb
+  - Eb
+  - Ab
+  - Db
+  - Gb
+  - Cb
+  - Fb
+  - A
+  - D
+  - G
+  - C
+  - E#
+  - A#
+  - D#
+  - G#
+  - C#
+  - F#
+  - B
+  - E
+  - A
+  - D
+  - G
+
+question:
+  - say
+  - console
+  #- GUI
+
+answer:
+  - play
+  #- say
+  #- console
+  #- GUI
+
+evaluation:
+  #- nothing
+  - say
+  - console
+  #- GUI

@@ -25,7 +25,7 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
 
 - [X] ~~2) Abstract an exercice class + yaml file for each exercice~~
 - [ ] Training list:
-    * intervals
+    * intervals (validation is different)
     * single hand chords
     * root and chord
     * 2 hand same voicing
@@ -71,8 +71,8 @@ The goal of this code is to help musicians learn chords and piano voicings, addi
 
 
 ## Package
-- [ ] rename to wes?mmcoy?tyner?
-- [ ] 3) option 2 installation as a cli tool  with a single exercice
+- [ ] rename to wes - mmcoy - tyner - thelonious.
+- [ ] option 2 installation as a cli tool  with a single exercice
 - [ ] option 1 installation as a cli that opens a hacky console menu tools
 
 - [ ] option 3 frontend with Kivy
@@ -133,7 +133,11 @@ Download FluidR3_GM.sf2 from the [page](https://member.keymusician.com/Member/Fl
 % pip install pyfluidsynth
 ```
 
-## Installing on Windows
+
+
+
+
+## Installing on Windows
 
 1. Go to the FluidSynth releases page and download the latest 64-bit release for Windows (e.g. fluidsynth-2.1.0-win64.zip). Extract this zip file into some directory
 
@@ -148,12 +152,14 @@ pip install pyfluidsynth
 ```
 
 **pyfluidsynth API**
+
 Here are a few useful classes and methods. For more information, sees the pyfluidsynth GitHub page.
 
 **fluidsynth.Synth class**
 
 A Synth is an instance of the FluidSynth synthesizer.
 
+```
 Synth()
 Create a Synth.
 .note_off(channel, key)
@@ -166,25 +172,28 @@ Select a sound to play on the given channel (a number from 0 to 15), using the g
 Load a soundfont into memory, returning an ID that references it.
 .start([device = name] [driver = name])
 Start the synthesizer. On Linux, I recommend passing device = 'hw:0'. On Windows, I recommend passing driver = 'dsound'.
+```
 
 
 # Code schema and responsibilities
 
 ## Current organization
 
-- -- miditrainer.py (
-        - init
-        - mian exercice loop (-> chordtrainer.py)
+Needs updating!
+
+- -- miditrainer.py
+    - init
+    - main exercice loop (-> chordtrainer.py)
 - -- chordtrainer.py
-        - contains chord definitions
-        - exercice loop functions (ask question, read answer, evaluate, choose_random_chord)
-        - contains chord maniupltion: find_Note_position, match_chord, ... -> like Music Theory
+    - contains chord definitions
+    - exercice loop functions (ask question, read answer, evaluate, choose_random_chord)
+    - contains chord manipulation: find_Note_position, match_chord, ... -> like Music Theory
 - -- chordTTS
-        - setup TTS
-        - setup midi input & output (mido)
-        - setup pyAudio (not used!)
+    - setup TTS
+    - setup midi input & output (mido)
+    - setup pyAudio (not used!)
 - -- GPIOcontrol
-        - exercice loop functions to control from midif controller
+    - exercice loop functions to control from midi controller
 
 
 ## Responsibilities
@@ -215,6 +224,12 @@ ok- miditrainer::Main Exercice loop
         - call musicTheory funcs to understand and match answer and evaluate
         - read GPIO
 
+- Refactor
+  - exercice.py review & list pending refactor
+  - Exercice.py refactor: generalize to music_block/music_exercice
+  - new types of exercices: intervals, arpeggios, scales, melodies, harmonic progressions, voicings
+  - IMplement piano harmony book pre-requisite exercices
+
 - monk.py
     - (ex miditrainer.py)
     - general workflow controller
@@ -227,12 +242,40 @@ ok- miditrainer::Main Exercice loop
         - interrupt current exercice and go back to the menu
         - console menus...
 
+- MusicTheory.py
+  - Add sus4 and sus2 chords
+  - Add chords with different root like C / B, C / A, ...
+  - Add harmonic progressions
+    - some Jazz standards
+    - OpenStudio examples: 1 to 4,
+  - Add voicings?
+    - 3/7
+    - shell
+    - right hand
+    - left hand
+    - right hand + bass
+    - right hand + shell
+    - jazz trio (right hand chords + left hand lead voice)
+    - 2 hands big chord (how is it called?)
+    - 4rth voicings
+  - Add modal interchange ?
+  - Add modulations examples? gather from mentions in videos
+
 
 
 - exercice.py
     ok- (ex chordtrainer.py)
     ok- read exercice yaml def
     ok- save all given external components (tts, pyaudio, ...)
+
+    - Review extensibly
+    - REfactor
+      - generalize chord concept -> note, interval, arpeggio, chord, scale, melody, chord progression
+        - item
+        - play
+        - exercice
+        - musical_exercice
+
     - prepare exercice loop
        ok - loop itself and calling other parts
        - load exercice yaml file

@@ -1,0 +1,77 @@
+---
+meta:
+    title: song02
+    author: pejigator
+    clef: fa
+    instrument: bass
+    pitch range:
+        - 40
+        - 64
+    measures: 17
+    compas: "4/4" # not yet used
+    measure_unit: negra
+    measure_duration: 4
+    rythm_type: predefined
+    swing: true
+
+song:
+    - passage01
+
+passages:
+    passage01:
+        - seq01
+        - seq02
+        - seq03
+        - seq01
+        - seq02
+        - seq03
+
+sequences:
+    seq01:
+        rythm:
+            custom:
+                - d4th
+                - d4th
+                - d4th
+                - d8th_swing1
+                - d8th_swing2
+
+        melody:
+            chords:
+                - A-7
+
+
+    seq02:
+        rythm:
+            custom:
+                - d4th
+                - d4th
+                - d8th_swing1 silence
+                - d8th_swing2
+                - d8th_swing1
+                - d8th_swing2
+        melody:
+            chords:
+                - D7
+                - Gmaj7
+                - Gmaj7
+
+
+    seq03:
+        rythm:
+            custom:
+                - d4th
+                - d4th
+                - d4th
+                - d8th_swing1
+                - d8th_swing2
+                - d4th
+                - d4th
+                - d8th_swing1 silence
+                - d8th_swing2
+                - d8th_swing1
+                - d8th_swing2
+        melody:
+            chords:
+                - Gmaj7
+

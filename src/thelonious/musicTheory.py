@@ -54,8 +54,10 @@ class MusicTheory(object):
         "major": [4, 3],
         "minor": [3, 4],
         "M7": [4, 3, 4],
+        "maj7": [4, 3, 4],
         "7": [4, 3, 3],
         "-7": [3, 4, 3],
+        "m7": [3, 4, 3],
         "7b5": [3, 3, 4],
         "dim7": [3, 3, 3],
     }
@@ -123,6 +125,20 @@ class MusicTheory(object):
 
         return final_chord
 
+    def find_real_note(self, note_name):
+        for n in self.note:
+            for synonime in n:
+                if synonime == note_name:
+                    return n
+
+        return None
+
+    def find_note_position(self, real_note):
+        if isinstance(real_note, str):
+            real_note = self.find_real_note(real_note)
+
+        return self.note.index(real_note)
+
     def build_chord_from_root_and_type(self, root, chord_type):
         final_chord = [
             root,
@@ -141,3 +157,71 @@ class MusicTheory(object):
             final_chord.append(current_note)
 
         return final_chord
+
+    def build_chord_from_root_and_type_simplified(self, root, chord_type):
+        final_chord = self.build_chord_from_root_and_type(root, chord_type)
+
+        final_chord = [
+            note if isinstance(note, str) else note[0] for note in final_chord
+        ]
+
+        return final_chord
+
+    def find_root_from_chord_name_substring(
+        self, chord_name, substring_length
+    ):
+        root = None
+
+        first_2_digits = chord_name[:substring_length]
+
+        for note_name in self.root_notes:
+            if first_2_digits == note_name:
+                root = note_name
+
+                break
+
+        return root
+
+    def find_root_from_chord_name(self, chord_name):
+        root = None
+        root = self.find_root_from_chord_name_substring(chord_name, 3)
+        if root is not None:
+            return root
+
+        root = self.find_root_from_chord_name_substring(chord_name, 2)
+        if root is not None:
+            return root
+
+        root = self.find_root_from_chord_name_substring(chord_name, 1)
+        return root
+
+    def build_chord_from_name(self, chord_name):
+        # example A-7
+
+        # first look for note with firs 2 digits
+        root = self.find_root_from_chord_name(chord_name)
+
+        print()
+        print(f"----- found root {root}")
+
+        if root is None:
+            raise Exception(f"Can't find root note from {chord_name}")
+
+        # then with the rest look for chord type
+        j = chord_name.find(root)
+
+        if j > -1 and len(chord_name) > j + len(root):
+            j = j + len(root)
+
+            chord_type = chord_name[j:]
+
+            chord_type_intervals = self.chord_types[chord_type]
+
+        else:
+            chord_type_intervals = self.chord_types["major"]
+
+        print(chord_type_intervals)
+
+        return self.build_chord_from_root_and_type_simplified(
+            root, chord_type_intervals
+        )

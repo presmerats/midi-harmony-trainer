@@ -119,3 +119,7 @@ SONG_CONFIG="./mysong.yml"
 # 	@echo ""
 # 	@echo ""
 # 	@echo ""
+
+%.midi: %.pdf
+	@echo         About to play the midi file
+	fluidsynth -a coreaudio -n -i ../../external/FluidR3_GM.sf2 $(@:.midi=.pdf.midi)
